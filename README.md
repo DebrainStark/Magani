@@ -18,45 +18,7 @@ Icons: Lucide React
 Build Tool: Vite
 Code Quality: ESLint, Prettier
 
-📂 Project Structure
-magani-landing-page/
-├── public/                  # Static assets
-│   ├── images/              # Images and icons
-│   ├── favicon.ico          # Website favicon
-│   └── robots.txt           # Robots file for SEO
-├── src/                     # Source code
-│   ├── components/          # React components
-│   │   ├── common/          # Reusable components
-│   │   │   ├── Button.jsx   # Button component
-│   │   │   ├── Card.jsx     # Card component
-│   │   │   ├── FeatureBox.jsx # Feature box component
-│   │   │   └── SectionTitle.jsx # Section title component
-│   │   ├── layout/          # Layout components
-│   │   │   ├── Navbar.jsx   # Navigation bar
-│   │   │   └── Footer.jsx   # Footer component
-│   │   └── sections/        # Page sections
-│   │       ├── Hero.jsx     # Hero section
-│   │       ├── ProblemStatement.jsx # Problem statement section
-│   │       ├── Stakeholders.jsx     # Stakeholders section
-│   │       ├── Products.jsx         # Products section
-│   │       ├── AiTechnology.jsx     # AI technology section
-│   │       ├── RisksMitigation.jsx  # Risks & mitigations section
-│   │       └── CallToAction.jsx     # Call to action section
-│   ├── constants/           # Constant definitions
-│   │   ├── navigation.js    # Navigation items
-│   │   ├── stakeholders.js  # Stakeholder data
-│   │   ├── products.js      # Product data
-│   │   └── risks.js         # Risks data
-│   ├── utils/               # Utility functions
-│   │   └── helpers.js       # Helper functions
-│   ├── App.jsx              # Main application component
-│   ├── main.jsx             # Application entry point
-│   └── index.css            # Global CSS
-├── .gitignore               # Git ignore file
-├── package.json             # NPM package config
-├── tailwind.config.js       # Tailwind CSS configuration
-├── vite.config.js           # Vite configuration
-└── README.md                # Project documentation
+ Project documentation
 ⚙️ Installation & Setup
 Prerequisites
 
