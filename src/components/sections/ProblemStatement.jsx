@@ -1,16 +1,14 @@
-// src/components/sections/ProblemStatement.jsx
 import React, { useState, useEffect, useRef, memo } from 'react';
 import { AlertTriangle, BarChart4, PieChart, DollarSign, TrendingDown, ArrowRight } from 'lucide-react';
 import SectionTitle from '../common/SectionTitle';
 
-// Problem Card data array (kept as is for consistency)
 const PROBLEM_CARDS = [
   { 
     id: 1, 
     title: "High Utilization", 
     description: "Excessive healthcare service usage without proper controls",
     icon: BarChart4,
-    color: "teal",
+    color: "primary", // Changed from teal to primary
     number: "01"
   },
   { 
@@ -18,7 +16,7 @@ const PROBLEM_CARDS = [
     title: "Increased Costs", 
     description: "Rising medical expenses for payers",
     icon: DollarSign,
-    color: "blue",
+    color: "secondary", // Changed from blue to secondary
     number: "02"
   },
   { 
@@ -26,7 +24,7 @@ const PROBLEM_CARDS = [
     title: "Elevated MLR", 
     description: "Medical Loss Ratio above 100-140%",
     icon: PieChart,
-    color: "purple",
+    color: "purple", // Kept as is
     number: "03"
   },
   { 
@@ -34,12 +32,12 @@ const PROBLEM_CARDS = [
     title: "Low Profitability", 
     description: "Unsustainable business model",
     icon: TrendingDown,
-    color: "red",
+    color: "red", // Kept as is
     number: "04"
   }
 ];
 
-// Custom hook for intersection observation - improves reusability and code organization
+// Custom hook for intersection observation - unchanged
 const useIntersectionObserver = (options) => {
   const [isIntersecting, setIsIntersecting] = useState(false);
   const elementRef = useRef(null);
@@ -70,28 +68,28 @@ const useIntersectionObserver = (options) => {
   return [elementRef, isIntersecting];
 };
 
-// Memoized ProblemCard component to reduce unnecessary re-renders
+// Memoized ProblemCard component with direct Tailwind classes
 const ProblemCard = memo(({ card, isActive, onActivate, isVisible, delay, flowDirection }) => {
   const { id, title, description, icon: Icon, color, number } = card;
 
-  // Tailwind-friendly dynamic classes based on color and active state
+  // Consistent color mapping function
   const getColorClasses = () => {
     switch (color) {
-      case 'teal':
+      case 'primary':
         return {
-          border: isActive ? "border-teal-400" : "border-slate-200 hover:border-teal-200",
-          iconBg: isActive ? "bg-teal-100" : "bg-teal-50",
-          iconColor: "text-teal-600",
-          numberBg: "bg-teal-500",
-          indicator: "bg-teal-400"
+          border: isActive ? "border-primary-400" : "border-slate-200 hover:border-primary-200",
+          iconBg: isActive ? "bg-primary-100" : "bg-primary-50",
+          iconColor: "text-primary-600",
+          numberBg: "bg-primary-500",
+          indicator: "bg-primary-400"
         };
-      case 'blue':
+      case 'secondary':
         return {
-          border: isActive ? "border-blue-400" : "border-slate-200 hover:border-blue-200",
-          iconBg: isActive ? "bg-blue-100" : "bg-blue-50",
-          iconColor: "text-blue-600",
-          numberBg: "bg-blue-500",
-          indicator: "bg-blue-400"
+          border: isActive ? "border-secondary-400" : "border-slate-200 hover:border-secondary-200",
+          iconBg: isActive ? "bg-secondary-100" : "bg-secondary-50",
+          iconColor: "text-secondary-600",
+          numberBg: "bg-secondary-500",
+          indicator: "bg-secondary-400"
         };
       case 'purple':
         return {
@@ -132,7 +130,7 @@ const ProblemCard = memo(({ card, isActive, onActivate, isVisible, delay, flowDi
 
   return (
     <div 
-      className={`group relative w-32 md:w-56 lg:w-64 bg-white p-4 md:p-6 rounded-xl border-2 ${classes.border} transition-all duration-300 ${isActive ? 'shadow-2xl scale-105 z-10' : 'shadow-lg hover:shadow-xl'} cursor-pointer`}
+      className={`group relative w-32 md:w-56 lg:w-64 bg-white p-2 md:p-4 rounded-xl border-2 ${classes.border} transition-all duration-300 ${isActive ? 'shadow-2xl scale-105 z-10' : 'shadow-lg hover:shadow-xl'} cursor-pointer`}
       style={{ 
         opacity: isVisible ? 1 : 0,
         transform: isVisible ? 'translateY(0)' : 'translateY(30px)',
@@ -158,15 +156,19 @@ const ProblemCard = memo(({ card, isActive, onActivate, isVisible, delay, flowDi
       <div className="flex flex-col items-center text-center">
         {/* Icon with improved animation */}
         <div 
-          className={`w-16 h-16 md:w-20 md:h-20 lg:w-24 lg:h-24 flex items-center justify-center ${classes.iconBg} ${classes.iconColor} rounded-full mb-3 md:mb-4 lg:mb-6 shadow-md transition-transform duration-300 ${isActive ? 'scale-110' : 'group-hover:scale-110'}`}
+          className={`w-16 h-16 md:w-20 md:h-20 lg:w-24 lg:h-24 flex items-center justify-center ${classes.iconBg} ${classes.iconColor} rounded-full mb-2 md:mb-4 lg:mb-6 shadow-md transition-transform duration-300 ${isActive ? 'scale-110' : 'group-hover:scale-110'}`}
           aria-hidden="true"
         >
           <Icon size={28} className="md:w-8 md:h-8 lg:w-10 lg:h-10" />
         </div>
         
         {/* Content */}
-        <h3 className="text-base md:text-xl lg:text-2xl font-bold text-slate-800 mb-1 md:mb-2 lg:mb-3">{title}</h3>
-        <p className="text-slate-600 text-xs md:text-sm lg:text-base">{description}</p>
+        <h3 className={`text-base md:text-xl lg:text-2xl font-bold text-slate-800 mb-1 md:mb-2`}>
+          {title}
+        </h3>
+        <p className={`text-slate-600 text-xs md:text-sm lg:text-base`}>
+          {description}
+        </p>
       </div>
       
       {/* Active indicator line with improved animation */}
@@ -202,26 +204,26 @@ const ConnectorArrow = memo(({ isVisible, delay, isReverse = false }) => (
 const MobileProblemCard = memo(({ card, isActive, onActivate, isVisible, delay, isLast }) => {
   const { id, title, description, icon: Icon, color } = card;
   
-  // Tailwind-friendly dynamic classes for mobile
+  // Consistent color mapping function
   const getColorClasses = () => {
     switch (color) {
-      case 'teal':
+      case 'primary':
         return {
-          bg: "bg-teal-50",
-          text: "text-teal-600",
-          active: "bg-teal-100",
-          border: "border-teal-400",
-          indicator: "bg-teal-400",
-          badgeBg: "bg-teal-500"
+          bg: "bg-primary-50",
+          text: "text-primary-600",
+          active: "bg-primary-100",
+          border: "border-primary-400",
+          indicator: "bg-primary-400",
+          badgeBg: "bg-primary-500"
         };
-      case 'blue':
+      case 'secondary':
         return {
-          bg: "bg-blue-50",
-          text: "text-blue-600",
-          active: "bg-blue-100",
-          border: "border-blue-400",
-          indicator: "bg-blue-400",
-          badgeBg: "bg-blue-500"
+          bg: "bg-secondary-50",
+          text: "text-secondary-600",
+          active: "bg-secondary-100",
+          border: "border-secondary-400",
+          indicator: "bg-secondary-400",
+          badgeBg: "bg-secondary-500"
         };
       case 'purple':
         return {
@@ -282,7 +284,7 @@ const MobileProblemCard = memo(({ card, isActive, onActivate, isVisible, delay, 
         aria-pressed={isActive}
         aria-label={`Problem: ${title} - ${description}`}
       >
-        <div className="flex items-center p-4 bg-white rounded-lg">
+        <div className={`flex items-center p-2 bg-white rounded-lg`}>
           <div className="relative flex-shrink-0">
             <div 
               className={`w-12 h-12 flex items-center justify-center rounded-full shadow-sm ${classes.bg} ${classes.text} ${isActive ? classes.active : ''}`}
@@ -298,9 +300,9 @@ const MobileProblemCard = memo(({ card, isActive, onActivate, isVisible, delay, 
             </div>
           </div>
           
-          <div className="ml-4 flex-grow">
-            <h3 className="text-lg font-bold text-slate-800">{title}</h3>
-            <p className="text-sm text-slate-600">{description}</p>
+          <div className={`ml-4 flex-grow`}>
+            <h3 className={`text-lg font-bold text-slate-800`}>{title}</h3>
+            <p className={`text-sm text-slate-600`}>{description}</p>
           </div>
           
           <ArrowRight 
@@ -321,7 +323,7 @@ const MobileProblemCard = memo(({ card, isActive, onActivate, isVisible, delay, 
       
       {/* Connector between cards - except last card */}
       {!isLast && (
-        <div className="flex justify-center py-1">
+        <div className={`flex justify-center py-1`}>
           <div className="h-6 border-l-2 border-dashed border-slate-300" aria-hidden="true"></div>
         </div>
       )}
@@ -348,33 +350,28 @@ const ProblemStatement = () => {
   return (
     <section 
       ref={sectionRef}
-      className="py-12 sm:py-16 md:py-20 lg:py-28 px-4 sm:px-6 bg-gradient-to-b from-white via-slate-50 to-slate-100 relative overflow-hidden"
+      id="problem"
+      className="py-16 bg-gradient-to-b from-white via-slate-50 to-slate-100 relative overflow-hidden"
       aria-labelledby="healthcare-problem-title"
     >
       {/* Improved background elements with subtle animation */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         <div 
-          className="absolute top-0 left-1/4 w-64 md:w-96 h-64 md:h-96 bg-teal-50 rounded-full mix-blend-multiply blur-3xl opacity-30"
-          style={{
-            animation: 'float 15s ease-in-out infinite',
-          }}
+          className="absolute top-0 left-1/4 w-64 md:w-96 h-64 md:h-96 bg-primary-50 rounded-full mix-blend-multiply blur-3xl opacity-30 animate-[float_15s_ease-in-out_infinite]"
         ></div>
         <div 
-          className="absolute bottom-0 right-1/4 w-64 md:w-96 h-64 md:h-96 bg-blue-50 rounded-full mix-blend-multiply blur-3xl opacity-30"
-          style={{
-            animation: 'float 17s ease-in-out infinite reverse',
-          }}
+          className="absolute bottom-0 right-1/4 w-64 md:w-96 h-64 md:h-96 bg-secondary-50 rounded-full mix-blend-multiply blur-3xl opacity-30 animate-[float_17s_ease-in-out_infinite_reverse]"
         ></div>
       </div>
       
-      <div className="max-w-6xl mx-auto relative z-10">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 xl:max-w-6xl">
         <div 
-          className={`text-center mb-10 sm:mb-14 md:mb-20 transition-all duration-1000 ease-out ${
+          className={`text-center mb-8 sm:mb-12 md:mb-16 transition-all duration-1000 ease-out ${
             isVisible ? 'opacity-100 transform translate-y-0' : 'opacity-0 transform translate-y-8'
           }`}
         >
           {/* Enhanced responsive alert badge with improved animation */}
-          <div className="inline-flex items-center gap-2 sm:gap-3 px-4 sm:px-6 py-1.5 sm:py-2.5 bg-red-50 rounded-full text-red-600 text-sm sm:text-base font-semibold border border-red-200 mb-6 sm:mb-8 shadow-md hover:shadow-lg transition-shadow duration-300">
+          <div className="inline-flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-1 sm:py-2 bg-red-50 rounded-full text-red-600 text-sm sm:text-base font-semibold border border-red-200 mb-4 sm:mb-6 shadow-md hover:shadow-lg transition-shadow duration-300">
             <div className="flex items-center justify-center w-6 h-6 sm:w-8 sm:h-8 bg-red-100 rounded-full relative">
               <AlertTriangle size={16} className="text-red-500" aria-hidden="true" />
               <span 
@@ -395,9 +392,9 @@ const ProblemStatement = () => {
         </div>
         
         {/* Responsive problem chain with improved accessibility */}
-        <div className="mt-10 sm:mt-16 max-w-5xl mx-auto">
+        <div className="mt-8 sm:mt-12 max-w-5xl mx-auto">
           {/* First row - hidden on mobile, visible on tablet+ */}
-          <div className="hidden sm:flex justify-center items-center gap-3 md:gap-6 lg:gap-8 mb-12 md:mb-16" role="list" aria-label="Healthcare problem flow: first phase">
+          <div className="hidden sm:flex justify-center items-center gap-2 md:gap-4 lg:gap-6 mb-8 md:mb-12" role="list" aria-label="Healthcare problem flow: first phase">
             <ProblemCard 
               card={PROBLEM_CARDS[0]}
               isActive={activeCard === 1}
@@ -420,7 +417,7 @@ const ProblemStatement = () => {
           </div>
           
           {/* Second row - hidden on mobile, visible on tablet+ */}
-          <div className="hidden sm:flex justify-center items-center gap-3 md:gap-6 lg:gap-8" role="list" aria-label="Healthcare problem flow: second phase">
+          <div className="hidden sm:flex justify-center items-center gap-2 md:gap-4 lg:gap-6" role="list" aria-label="Healthcare problem flow: second phase">
             <ProblemCard 
               card={PROBLEM_CARDS[3]}
               isActive={activeCard === 4}
@@ -443,7 +440,7 @@ const ProblemStatement = () => {
           </div>
           
           {/* Improved mobile-optimized accordion layout */}
-          <div className="sm:hidden space-y-4 max-w-sm mx-auto" role="list" aria-label="Healthcare problem sequence">
+          <div className="sm:hidden gap-4 max-w-sm mx-auto" role="list" aria-label="Healthcare problem sequence">
             {PROBLEM_CARDS.map((card, index) => (
               <MobileProblemCard 
                 key={card.id}
@@ -460,19 +457,21 @@ const ProblemStatement = () => {
         
         {/* Enhanced bottom alert section with improved animations */}
         <div 
-          className={`mt-16 sm:mt-20 lg:mt-24 text-center transition-all duration-1000 ${
-            isVisible ? 'opacity-100 transform translate-y-0' : 'opacity-0 transform translate-y-8'
-          }`}
-          style={{ transitionDelay: '0.9s' }}
+          className="mt-12 sm:mt-16 lg:mt-16 text-center transition-all duration-1000"
+          style={{ 
+            transitionDelay: '0.9s',
+            opacity: isVisible ? 1 : 0,
+            transform: isVisible ? 'translateY(0)' : 'translateY(8px)'
+          }}
         >
-          <div className="inline-flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-3 px-4 sm:px-6 md:px-10 py-4 sm:py-5 bg-gradient-to-r from-red-50 to-red-100 rounded-xl border-2 border-red-200 shadow-lg hover:shadow-xl transition-shadow duration-300">
+          <div className="inline-flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 px-2 sm:px-4 md:px-6 py-2 sm:py-4 bg-gradient-to-r from-red-50 to-red-100 rounded-xl border-2 border-red-200 shadow-lg hover:shadow-xl transition-shadow duration-300">
             <AlertTriangle size={20} className="text-red-500 sm:mr-1" aria-hidden="true" />
             <span className="text-lg sm:text-xl md:text-2xl font-bold text-red-700 text-center">Most HMOs in Nigeria have MLRs above 100-140%</span>
           </div>
           
           {/* Enhanced responsive explanation card with animated stats */}
           <div 
-            className="mt-6 sm:mt-8 p-4 sm:p-6 bg-white/70 backdrop-blur-sm rounded-xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow duration-300 max-w-3xl mx-auto"
+            className="mt-4 sm:mt-6 p-2 sm:p-4 bg-white/70 backdrop-blur-sm rounded-xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow duration-300 max-w-3xl mx-auto"
             style={{
               animation: isVisible ? 'fadeIn 0.5s ease-out 1.2s forwards' : 'none',
               opacity: 0,
@@ -483,9 +482,9 @@ const ProblemStatement = () => {
             </p>
             
             {/* Improved mobile-friendly stats with animations */}
-            <div className="mt-6 pt-6 border-t border-slate-100 grid grid-cols-2 gap-4">
+            <div className="mt-4 pt-4 border-t border-slate-100 grid grid-cols-2 gap-2">
               <div 
-                className="flex flex-col items-center p-3 bg-slate-50 rounded-lg hover:bg-slate-100 transition-colors duration-300"
+                className="flex flex-col items-center p-2 bg-slate-50 rounded-lg hover:bg-slate-100 transition-colors duration-300"
                 style={{
                   animation: isVisible ? 'slideUp 0.5s ease-out 1.4s forwards' : 'none',
                   opacity: 0,
@@ -496,7 +495,7 @@ const ProblemStatement = () => {
                 <div className="text-slate-600 text-xs sm:text-sm">Average MLR</div>
               </div>
               <div 
-                className="flex flex-col items-center p-3 bg-slate-50 rounded-lg hover:bg-slate-100 transition-colors duration-300"
+                className="flex flex-col items-center p-2 bg-slate-50 rounded-lg hover:bg-slate-100 transition-colors duration-300"
                 style={{
                   animation: isVisible ? 'slideUp 0.5s ease-out 1.6s forwards' : 'none',
                   opacity: 0,

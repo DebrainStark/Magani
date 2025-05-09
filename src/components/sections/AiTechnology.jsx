@@ -1,4 +1,3 @@
-// src/components/sections/AiTechnology.jsx
 import React, { useState, useEffect, useRef, memo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Brain, Zap, Database, Wifi, Globe, ShieldCheck, Cpu, MapPin, CheckCircle2, BarChart2, Lock, Sparkles } from 'lucide-react';
@@ -55,20 +54,28 @@ const BentoBox = memo(({ className = "", children, delay = 0, hover = true }) =>
 const FeatureItem = memo(({ icon: Icon, text, dark = false }) => (
   <div className="flex items-start group">
     <div className={`w-7 h-7 rounded-full flex-shrink-0 flex items-center justify-center mr-3 mt-0.5 transition-colors duration-200 ${
-      dark ? 'bg-white/20 group-hover:bg-white/30' : 'bg-indigo-100 group-hover:bg-indigo-200'
+      dark ? 'bg-white/20 group-hover:bg-white/30' : 'bg-primary-100 group-hover:bg-primary-200'
     }`}>
-      <Icon size={14} className={dark ? "text-white" : "text-indigo-700"} />
+      <Icon size={14} className={dark ? "text-white" : "text-primary-700"} />
     </div>
     <span className={`${dark ? 'text-white' : 'text-slate-700'} text-sm`}>{text}</span>
   </div>
 ));
 
 // Reusable metric box component with animation
-const MetricBox = memo(({ value, label, color = "indigo" }) => {
-  const colors = {
-    indigo: "from-indigo-500 to-indigo-600",
-    blue: "from-blue-500 to-blue-600",
-    purple: "from-purple-500 to-purple-600",
+const MetricBox = memo(({ value, label, color = "primary" }) => {
+  // Updated color mapping to use our theme colors
+  const getGradientClass = () => {
+    switch (color) {
+      case 'primary':
+        return "from-primary-500 to-primary-600";
+      case 'secondary':
+        return "from-secondary-500 to-secondary-600";
+      case 'purple':
+        return "from-purple-500 to-purple-600";
+      default:
+        return "from-primary-500 to-primary-600";
+    }
   };
   
   return (
@@ -78,7 +85,7 @@ const MetricBox = memo(({ value, label, color = "indigo" }) => {
       transition={{ type: "spring", stiffness: 300, damping: 20 }}
     >
       {/* Gradient overlay at top */}
-      <div className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r ${colors[color]}`}></div>
+      <div className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r ${getGradientClass()}`}></div>
       
       <motion.div
         initial={{ opacity: 0, scale: 0.8 }}
@@ -93,16 +100,27 @@ const MetricBox = memo(({ value, label, color = "indigo" }) => {
   );
 });
 
-// Badge component
-const Badge = memo(({ children, color = "indigo" }) => {
-  const colorClasses = {
-    indigo: "bg-indigo-50 text-indigo-700 border-indigo-100",
-    slate: "bg-slate-100 text-slate-700 border-slate-200",
+// Badge component with updated color mapping
+const Badge = memo(({ children, color = "primary" }) => {
+  // Updated color mapping to use our theme colors
+  const getColorClasses = () => {
+    switch (color) {
+      case 'primary':
+        return "bg-primary-50 text-primary-700 border-primary-100";
+      case 'secondary':
+        return "bg-secondary-50 text-secondary-700 border-secondary-100";
+      case 'indigo':
+        return "bg-indigo-50 text-indigo-700 border-indigo-100";
+      case 'slate':
+        return "bg-slate-100 text-slate-700 border-slate-200";
+      default:
+        return "bg-primary-50 text-primary-700 border-primary-100";
+    }
   };
   
   return (
     <motion.span 
-      className={`inline-flex px-5 py-2 rounded-full text-sm font-medium ${colorClasses[color]} shadow-sm border`}
+      className={`inline-flex px-5 py-2 rounded-full text-sm font-medium ${getColorClasses()} shadow-sm border`}
       initial={{ opacity: 0, y: -10 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
@@ -123,30 +141,33 @@ const AiTechnology = () => {
   return (
     <section 
       ref={sectionRef} 
-      className="py-20 md:py-28 px-4 sm:px-6 bg-gradient-to-b from-slate-50 to-white relative overflow-hidden"
+      id="ai"
+      className="py-20 md:py-28 bg-gradient-to-b from-slate-50 to-white relative overflow-hidden"
       aria-labelledby="ai-technology-title"
     >
       {/* Enhanced background elements with animated blobs */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute inset-0 opacity-60 bg-[radial-gradient(ellipse_at_top_right,rgba(79,70,229,0.15),transparent_50%),radial-gradient(ellipse_at_bottom_left,rgba(165,243,252,0.1),transparent_50%)]"></div>
-        <div className="absolute top-1/3 -right-40 w-96 h-96 bg-indigo-50 rounded-full mix-blend-multiply blur-3xl opacity-70 animate-blob"></div>
-        <div className="absolute -bottom-20 -left-20 w-80 h-80 bg-blue-50 rounded-full mix-blend-multiply blur-3xl opacity-70 animate-blob animation-delay-2000"></div>
+        <div className="absolute inset-0 opacity-60 bg-[radial-gradient(ellipse_at_top_right,rgba(22,163,74,0.15),transparent_50%),radial-gradient(ellipse_at_bottom_left,rgba(37,99,235,0.1),transparent_50%)]"></div>
+        <div className="absolute top-1/3 -right-40 w-96 h-96 bg-primary-50 rounded-full mix-blend-multiply blur-3xl opacity-70 animate-blob"></div>
+        <div className="absolute -bottom-20 -left-20 w-80 h-80 bg-secondary-50 rounded-full mix-blend-multiply blur-3xl opacity-70 animate-blob animation-delay-2000"></div>
         <div className="absolute top-2/3 left-1/3 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-slate-100 rounded-full mix-blend-multiply blur-3xl opacity-50 animate-blob animation-delay-4000"></div>
       </div>
       
-      <div className="max-w-7xl mx-auto relative z-10">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 xl:max-w-7xl relative z-10">
         <motion.div 
           className="text-center mb-16"
           initial={{ opacity: 0, y: 20 }}
           animate={isVisible ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.6, ease: "easeOut" }}
         >
-          <Badge color="indigo" className="mb-4">
-            <span className="flex items-center gap-2">
-              <Sparkles size={15} className="text-indigo-500" />
-              Powered by Advanced AI
-            </span>
-          </Badge>
+          <div className="mb-4">
+            <Badge color="primary">
+              <span className="flex items-center gap-2">
+                <Sparkles size={15} className="text-primary-500" />
+                Powered by Advanced AI
+              </span>
+            </Badge>
+          </div>
           
           <SectionTitle 
             id="ai-technology-title"
@@ -160,7 +181,7 @@ const AiTechnology = () => {
           {/* Main Feature: DeepSeek LLM */}
           <BentoBox className="col-span-12 lg:col-span-6" delay={0}>
             <div className="h-full flex flex-col md:flex-row">
-              <div className="bg-gradient-to-br from-indigo-700 to-indigo-900 text-white p-6 md:p-8 md:w-2/5 flex flex-col justify-center relative overflow-hidden">
+              <div className="bg-gradient-to-br from-primary-700 to-primary-900 text-white p-6 md:p-8 md:w-2/5 flex flex-col justify-center relative overflow-hidden">
                 {/* Animated pattern overlay */}
                 <div className="absolute inset-0 opacity-10">
                   <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
@@ -180,9 +201,9 @@ const AiTechnology = () => {
                   transition={{ duration: 0.6, delay: 0.1 }}
                 >
                   <div className="relative">
-                    <Brain size={40} className="mb-5 text-indigo-200" />
+                    <Brain size={40} className="mb-5 text-primary-200" />
                     <h3 className="text-xl md:text-2xl font-bold mb-3">DeepSeek LLM Model</h3>
-                    <p className="text-indigo-100 text-sm md:text-base">
+                    <p className="text-primary-100 text-sm md:text-base">
                       State-of-the-art AI specifically fine-tuned for Nigerian healthcare
                     </p>
                   </div>
@@ -198,8 +219,8 @@ const AiTechnology = () => {
                     viewport={{ once: true }}
                     transition={{ duration: 0.4, delay: 0.2 }}
                   >
-                    <div className="w-10 h-10 rounded-xl bg-indigo-100 flex items-center justify-center mr-3 shadow-sm">
-                      <Database size={18} className="text-indigo-700" />
+                    <div className="w-10 h-10 rounded-xl bg-primary-100 flex items-center justify-center mr-3 shadow-sm">
+                      <Database size={18} className="text-primary-700" />
                     </div>
                     <span className="font-medium text-sm md:text-base text-slate-800">7B Parameters</span>
                   </motion.div>
@@ -211,8 +232,8 @@ const AiTechnology = () => {
                     viewport={{ once: true }}
                     transition={{ duration: 0.4, delay: 0.3 }}
                   >
-                    <div className="w-10 h-10 rounded-xl bg-indigo-100 flex items-center justify-center mr-3 shadow-sm">
-                      <Cpu size={18} className="text-indigo-700" />
+                    <div className="w-10 h-10 rounded-xl bg-primary-100 flex items-center justify-center mr-3 shadow-sm">
+                      <Cpu size={18} className="text-primary-700" />
                     </div>
                     <span className="font-medium text-sm md:text-base text-slate-800">Mobile Optimized</span>
                   </motion.div>
@@ -224,8 +245,8 @@ const AiTechnology = () => {
                     viewport={{ once: true }}
                     transition={{ duration: 0.4, delay: 0.4 }}
                   >
-                    <div className="w-10 h-10 rounded-xl bg-indigo-100 flex items-center justify-center mr-3 shadow-sm">
-                      <ShieldCheck size={18} className="text-indigo-700" />
+                    <div className="w-10 h-10 rounded-xl bg-primary-100 flex items-center justify-center mr-3 shadow-sm">
+                      <ShieldCheck size={18} className="text-primary-700" />
                     </div>
                     <span className="font-medium text-sm md:text-base text-slate-800">Privacy-Focused</span>
                   </motion.div>
@@ -237,8 +258,8 @@ const AiTechnology = () => {
                     viewport={{ once: true }}
                     transition={{ duration: 0.4, delay: 0.5 }}
                   >
-                    <div className="w-10 h-10 rounded-xl bg-indigo-100 flex items-center justify-center mr-3 shadow-sm">
-                      <Zap size={18} className="text-indigo-700" />
+                    <div className="w-10 h-10 rounded-xl bg-primary-100 flex items-center justify-center mr-3 shadow-sm">
+                      <Zap size={18} className="text-primary-700" />
                     </div>
                     <span className="font-medium text-sm md:text-base text-slate-800">Low Latency</span>
                   </motion.div>
@@ -249,7 +270,7 @@ const AiTechnology = () => {
           
           {/* Data Security */}
           <BentoBox className="col-span-12 lg:col-span-6" delay={1}>
-            <div className="h-full bg-gradient-to-br from-blue-700 to-indigo-800 text-white p-6 md:p-8 flex flex-col justify-between relative overflow-hidden">
+            <div className="h-full bg-gradient-to-br from-secondary-700 to-primary-800 text-white p-6 md:p-8 flex flex-col justify-between relative overflow-hidden">
               {/* Animated security pattern */}
               <div className="absolute inset-0 opacity-10">
                 <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
@@ -269,9 +290,9 @@ const AiTechnology = () => {
                 transition={{ duration: 0.6, delay: 0.2 }}
               >
                 <div className="relative">
-                  <Lock size={36} className="mb-5 text-blue-200" />
+                  <Lock size={36} className="mb-5 text-secondary-200" />
                   <h3 className="text-xl md:text-2xl font-bold mb-3">Data Security</h3>
-                  <p className="text-blue-100 text-sm md:text-base mb-6">
+                  <p className="text-secondary-100 text-sm md:text-base mb-6">
                     Enterprise-grade protection for all healthcare data with robust security measures
                   </p>
                 </div>
@@ -329,7 +350,7 @@ const AiTechnology = () => {
                   <defs>
                     <pattern id="nigeria-pattern" patternUnits="userSpaceOnUse" width="40" height="40" patternTransform="rotate(45)">
                       <rect width="100%" height="100%" fill="none"/>
-                      <path d="M0 20 L40 20" stroke="#4338ca" strokeWidth="1" strokeDasharray="1,3"/>
+                      <path d="M0 20 L40 20" stroke="#16a34a" strokeWidth="1" strokeDasharray="1,3"/>
                     </pattern>
                   </defs>
                   <rect width="100%" height="100%" fill="url(#nigeria-pattern)"/>
@@ -381,8 +402,8 @@ const AiTechnology = () => {
                 <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
                   <defs>
                     <pattern id="wifi-pattern" patternUnits="userSpaceOnUse" width="60" height="60">
-                      <path d="M0 30 A 30 30 0 0 1 60 30" fill="none" stroke="#4338ca" strokeWidth="1" strokeDasharray="2,4"/>
-                      <path d="M15 30 A 15 15 0 0 1 45 30" fill="none" stroke="#4338ca" strokeWidth="1" strokeDasharray="2,4"/>
+                      <path d="M0 30 A 30 30 0 0 1 60 30" fill="none" stroke="#2563eb" strokeWidth="1" strokeDasharray="2,4"/>
+                      <path d="M15 30 A 15 15 0 0 1 45 30" fill="none" stroke="#2563eb" strokeWidth="1" strokeDasharray="2,4"/>
                     </pattern>
                   </defs>
                   <rect width="100%" height="100%" fill="url(#wifi-pattern)"/>
@@ -396,7 +417,7 @@ const AiTechnology = () => {
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: 0.1 }}
               >
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 flex items-center justify-center mr-4 shadow-md">
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-r from-secondary-600 to-purple-600 flex items-center justify-center mr-4 shadow-md">
                   <Wifi size={20} className="text-white" />
                 </div>
                 <h3 className="text-lg md:text-xl font-bold text-slate-800">Offline Capable</h3>
@@ -434,7 +455,7 @@ const AiTechnology = () => {
                 <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
                   <defs>
                     <pattern id="performance-pattern" patternUnits="userSpaceOnUse" width="40" height="40">
-                      <path d="M20 0 L25 20 L40 25 L25 30 L20 50 L15 30 L0 25 L15 20 Z" fill="none" stroke="#4338ca" strokeWidth="0.5"/>
+                      <path d="M20 0 L25 20 L40 25 L25 30 L20 50 L15 30 L0 25 L15 20 Z" fill="none" stroke="#16a34a" strokeWidth="0.5"/>
                     </pattern>
                   </defs>
                   <rect width="100%" height="100%" fill="url(#performance-pattern)"/>
@@ -496,8 +517,8 @@ const AiTechnology = () => {
               </div>
               
               <div className="md:w-2/3 grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
-                <MetricBox value="97%" label="Accuracy" color="indigo" />
-                <MetricBox value="85%" label="Time Savings" color="blue" />
+                <MetricBox value="97%" label="Accuracy" color="primary" />
+                <MetricBox value="85%" label="Time Savings" color="secondary" />
                 <MetricBox value="43%" label="Cost Reduction" color="purple" />
               </div>
             </div>

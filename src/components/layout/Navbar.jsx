@@ -1,235 +1,268 @@
-import { useState, useEffect, useRef } from 'react';
-import { navLinks } from '../../constants/navigation';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Menu, X, ChevronDown } from 'lucide-react';
+
+const SCROLL_THRESHOLD = 20;
+const NAVBAR_HIDE_THRESHOLD = 300;
+const SECTION_OFFSET = 100;
+const NAVBAR_HEIGHT = 80;
+
+const navLinks = [
+  { id: 1, title: 'Problems', url: '#problem' },
+  { id: 2, title: 'Stakeholders', url: '#stakeholder' },
+  { id: 3, title: 'Products', url: '#product' },
+  { id: 4, title: 'AI', url: '#ai' },
+  { id: 5, title: 'Risks', url: '#risks' },
+];
 
 const Navbar = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const [activeDropdown, setActiveDropdown] = useState(null);
+  const [activeSection, setActiveSection] = useState('');
+  const [isHidden, setIsHidden] = useState(false);
+  const [lastScrollY, setLastScrollY] = useState(0);
   const navRef = useRef(null);
+  const mobileMenuRef = useRef(null);
 
-  useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 20);
-    };
+  // Throttle scroll handler
+  const handleScroll = useCallback(() => {
+    const currentScrollY = window.scrollY;
     
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
-
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (navRef.current && !navRef.current.contains(event.target)) {
-        setMobileMenuOpen(false);
+    // Check if scrolled past threshold
+    const isScrolled = currentScrollY > SCROLL_THRESHOLD;
+    setScrolled(isScrolled);
+    
+    // Handle scroll direction for show/hide effects
+    if (currentScrollY > lastScrollY && currentScrollY > NAVBAR_HIDE_THRESHOLD) {
+      setIsHidden(true);
+    } else {
+      setIsHidden(false);
+    }
+    
+    // Update active section based on scroll position
+    const sections = document.querySelectorAll('section[id]');
+    let newActiveSection = '';
+    
+    sections.forEach(section => {
+      const sectionTop = section.getBoundingClientRect().top + currentScrollY - SECTION_OFFSET;
+      const sectionHeight = section.offsetHeight;
+      
+      if (currentScrollY >= sectionTop && currentScrollY < sectionTop + sectionHeight) {
+        newActiveSection = `#${section.id}`;
       }
-    };
+    });
+    
+    setActiveSection(newActiveSection);
+    setLastScrollY(currentScrollY);
+  }, [lastScrollY]);
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+  // Close mobile menu when clicking outside
+  const handleClickOutside = useCallback((event) => {
+    if (
+      navRef.current && 
+      !navRef.current.contains(event.target) &&
+      (!mobileMenuRef.current || !mobileMenuRef.current.contains(event.target))
+    ) {
+      setMobileMenuOpen(false);
+    }
   }, []);
 
-  
-  const dropdownContent = {
-    solutions: [
-      { title: "Healthcare", url: "/solutions/healthcare", description: "Solutions for medical professionals" },
-      { title: "Finance", url: "/solutions/finance", description: "Financial technology solutions" },
-      { title: "Education", url: "/solutions/education", description: "Learning management systems" }
-    ],
-    resources: [
-      { title: "Blog", url: "/blog", description: "Latest articles and updates" },
-      { title: "Documentation", url: "/docs", description: "Guides and references" },
-      { title: "Support", url: "/support", description: "Get help when you need it" }
-    ]
-  };
+  // Handle smooth scrolling for in-page links
+  const handleLinkClick = useCallback((e, url) => {
+    e.preventDefault();
+    setMobileMenuOpen(false);
+    
+    const targetId = url.substring(1);
+    const targetElement = document.getElementById(targetId);
+    
+    if (targetElement) {
+      window.scrollTo({
+        top: targetElement.offsetTop - NAVBAR_HEIGHT,
+        behavior: 'smooth'
+      });
+      
+      // Update URL without page reload
+      if (history.pushState) {
+        history.pushState(null, '', url);
+      } else {
+        window.location.hash = url;
+      }
+    }
+  }, []);
 
-  const toggleDropdown = (id) => {
-    setActiveDropdown(activeDropdown === id ? null : id);
-  };
+  // Add/remove event listeners
+  useEffect(() => {
+    const throttledScroll = throttle(handleScroll, 100);
+    window.addEventListener('scroll', throttledScroll, { passive: true });
+    
+    document.addEventListener('mousedown', handleClickOutside);
+    
+    return () => {
+      window.removeEventListener('scroll', throttledScroll);
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [handleScroll, handleClickOutside]);
+
+  // Focus management for mobile menu
+  useEffect(() => {
+    if (mobileMenuOpen && mobileMenuRef.current) {
+      const firstLink = mobileMenuRef.current.querySelector('a');
+      if (firstLink) {
+        firstLink.focus();
+      }
+    }
+  }, [mobileMenuOpen]);
 
   return (
     <header 
-      className="fixed w-full top-0 z-50 flex justify-center px-4 md:px-8 pt-5 text-slate-800"
       ref={navRef}
+      className={`fixed w-full z-50 transition-all duration-500 ${
+        isHidden ? '-translate-y-full' : 'translate-y-0'
+      } ${scrolled ? 'py-1' : 'py-5'}`}
+      aria-hidden={isHidden}
     >
-      <div className={`w-full max-w-7xl transition-all duration-300 ${scrolled ? 'py-2' : 'py-4'}`}>
-
-        {/* Main Navbar with glass effect */}
-        <nav className={`
-          relative backdrop-blur-md border rounded-xl shadow-lg transition-all duration-300
-          ${scrolled ? 'bg-white/90' : 'bg-white/70'} border-white/20
-        `}>
-          <div className="px-6 md:px-8 py-4 md:py-5 flex justify-between items-center">
-
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
+        <nav 
+          className={`relative transition-all duration-500 ${
+            scrolled 
+              ? 'backdrop-blur-lg bg-white/90 shadow-lg rounded-xl border border-white/20' 
+              : 'bg-transparent'
+          }`}
+          aria-label="Main navigation"
+        >
+          <div className="px-4 py-3 flex justify-between items-center">
             {/* Logo */}
-            <a href="/" className="flex items-center space-x-3 group">
-              <span className="h-10 w-10 rounded-lg flex items-center justify-center bg-gradient-to-r from-teal-500 to-blue-600 transition-transform duration-300 group-hover:rotate-6">
-                <span className="text-white text-2xl font-bold">M</span>
+            <a 
+              href="/" 
+              className="flex items-center space-x-3 group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 rounded-lg"
+              aria-label="Home"
+            >
+              <span className={`h-10 w-10 rounded-lg flex items-center justify-center bg-gradient-to-r from-primary-500 to-secondary-600 transition-all duration-500 ${
+                scrolled ? 'scale-90 rotate-6' : 'scale-100 rotate-0'
+              } group-hover:scale-105 group-hover:shadow-md`}>
+                <span className="text-white text-xl font-bold">M</span>
               </span>
-              <span className="text-2xl md:text-3xl font-bold text-slate-800">
+              <span className={`text-2xl font-bold transition-all duration-300 ${
+                scrolled ? 'text-slate-800' : 'text-slate-900'
+              }`}>
                 Magani
               </span>
             </a>
 
             {/* Desktop Navigation */}
-            <div className="hidden lg:flex items-center space-x-2">
+            <ul className="hidden lg:flex items-center space-x-2">
               {navLinks.map((link) => (
-                link.dropdown ? (
-                  <div key={link.id} className="relative group">
-                    <button
-                      onClick={() => toggleDropdown(link.id)}
-                      className={`flex items-center px-4 py-3 rounded-lg text-base font-medium transition-colors
-                        hover:bg-slate-100
-                        ${activeDropdown === link.id ? 'bg-slate-100 text-teal-600' : ''}`}
-                    >
-                      {link.title}
-                      <ChevronDown size={18} className="ml-1" />
-                    </button>
-                    
-                    {activeDropdown === link.id && (
-                      <div className="absolute left-0 top-full mt-1 w-72 rounded-lg shadow-xl overflow-hidden z-20 
-                        bg-white border border-slate-100">
-                        <div className="p-4">
-                          <p className="text-sm font-semibold mb-2 text-slate-500">
-                            {link.id.toUpperCase()}
-                          </p>
-                          {dropdownContent[link.id]?.map((item) => (
-                            <a 
-                              key={item.title} 
-                              href={item.url}
-                              className="block px-4 py-3 rounded-md mb-1 transition-colors hover:bg-slate-50"
-                            >
-                              <div className="font-medium text-slate-800">{item.title}</div>
-                              <div className="text-sm text-slate-500">{item.description}</div>
-                            </a>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                ) : (
+                <li key={link.id}>
                   <a
-                    key={link.id}
                     href={link.url}
-                    className="px-4 py-3 rounded-lg text-base font-medium transition-colors
-                      hover:bg-slate-100 text-slate-700 hover:text-teal-600"
+                    onClick={(e) => handleLinkClick(e, link.url)}
+                    className={`relative px-4 py-2 rounded-lg text-base font-medium transition-all duration-200 overflow-hidden group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 ${
+                      activeSection === link.url 
+                        ? 'text-primary-600' 
+                        : 'text-slate-700 hover:text-primary-600'
+                    }`}
+                    aria-current={activeSection === link.url ? 'page' : undefined}
                   >
-                    {link.title}
+                    <span className={`absolute inset-0 rounded-lg transition-all duration-300 ${
+                      activeSection === link.url 
+                        ? 'bg-primary-50' 
+                        : 'bg-slate-100/0 group-hover:bg-slate-100/80'
+                    }`}></span>
+                    <span className="relative z-10">{link.title}</span>
+                    {activeSection === link.url && (
+                      <span className="absolute bottom-1 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-primary-500 rounded-full"></span>
+                    )}
                   </a>
-                )
+                </li>
               ))}
-            </div>
+            </ul>
 
-            {/* Right side actions */}
-            <div className="flex items-center">    
-                        
-              {/* Contact Button */}
-              <a 
-                href="#contact" 
-                className="hidden md:flex ml-2 px-6 py-3 text-white font-medium text-base rounded-lg shadow-sm hover:shadow-md transition-all duration-200
-                  bg-gradient-to-r from-teal-500 to-blue-600 hover:from-teal-600 hover:to-blue-700"
-              >
-                Contact Us
-              </a>
+            {/* Contact Button */}
+            <a 
+              href="#contact" 
+              onClick={(e) => handleLinkClick(e, '#contact')}
+              className={`hidden lg:flex items-center px-5 py-2 text-white font-medium text-base rounded-lg shadow-sm transition-all duration-500 overflow-hidden relative focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 ${
+                scrolled ? 'from-primary-600 to-secondary-600' : 'from-primary-500 to-secondary-500'
+              }`}
+              style={{
+                backgroundImage: 'linear-gradient(to right, var(--tw-gradient-stops))'
+              }}
+            >
+              <span className="absolute inset-0 bg-white opacity-0 hover:opacity-20 transition-opacity duration-300"></span>
+              <span className="relative z-10">Contact Us</span>
+              <span className={`absolute bottom-0 left-0 w-full h-0.5 bg-white/30 transform scale-x-0 transition-transform duration-300 origin-left group-hover:scale-x-100 ${
+                scrolled ? 'opacity-100' : 'opacity-50'
+              }`}></span>
+            </a>
 
-              {/* Mobile Menu Button */}
-              <button
-                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="lg:hidden p-2 ml-4 rounded-lg transition-colors hover:bg-slate-100"
-                aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
-                aria-expanded={mobileMenuOpen}
-              >
-                {mobileMenuOpen ? <X size={28} /> : <Menu size={28} />}
-              </button>
-            </div>
+            {/* Mobile Menu Button */}
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="lg:hidden p-2 rounded-lg transition-colors hover:bg-slate-100/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2"
+              aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
+              aria-expanded={mobileMenuOpen}
+              aria-controls="mobile-menu"
+            >
+              {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+            </button>
           </div>
         </nav>
 
-        {/* Mobile Menu - Slide In from right */}
-        <div className={`lg:hidden fixed inset-y-0 right-0 w-full max-w-sm z-50 transition-transform duration-300 transform
-          ${mobileMenuOpen ? 'translate-x-0' : 'translate-x-full'}
-          bg-white text-slate-800 shadow-2xl`}
+        {/* Mobile Menu */}
+        <div 
+          ref={mobileMenuRef}
+          id="mobile-menu"
+          className={`lg:hidden overflow-hidden transition-all duration-500 ${
+            mobileMenuOpen ? 'max-h-96 opacity-100 mt-2' : 'max-h-0 opacity-0'
+          }`}
+          aria-hidden={!mobileMenuOpen}
         >
-          <div className="flex flex-col h-full">
-            {/* Mobile menu header */}
-            <div className="px-6 py-5 border-b border-slate-200 flex justify-between items-center">
-              <a href="/" className="flex items-center space-x-2">
-                <span className="h-10 w-10 rounded-lg flex items-center justify-center bg-gradient-to-r from-teal-500 to-blue-600">
-                  <span className="text-white text-2xl font-bold">M</span>
-                </span>
-                <span className="text-xl font-bold">Magani</span>
-              </a>
-              <button 
-                onClick={() => setMobileMenuOpen(false)}
-                className="p-2 rounded-lg hover:bg-slate-100"
-                aria-label="Close menu"
-              >
-                <X size={24} />
-              </button>
-            </div>
-            
-            {/* Mobile menu links */}
-            <div className="flex-1 overflow-y-auto py-4 px-6">
+          <div className={`bg-white rounded-xl shadow-lg border border-slate-100 transition-all duration-500 transform ${
+            mobileMenuOpen ? 'scale-100' : 'scale-95'
+          }`}>
+            <ul className="p-4">
               {navLinks.map((link) => (
-                link.dropdown ? (
-                  <div key={link.id} className="mb-2">
-                    <button
-                      onClick={() => toggleDropdown(link.id)}
-                      className="flex items-center justify-between w-full py-4 px-3 text-left rounded-lg
-                        hover:bg-slate-100"
-                    >
-                      <span className="font-medium text-lg">{link.title}</span>
-                      <ChevronDown 
-                        size={18} 
-                        className={`transition-transform ${activeDropdown === link.id ? 'rotate-180' : ''}`} 
-                      />
-                    </button>
-                    
-                    {activeDropdown === link.id && (
-                      <div className="mt-1 mb-3 rounded-lg overflow-hidden bg-slate-50">
-                        {dropdownContent[link.id]?.map((item) => (
-                          <a 
-                            key={item.title} 
-                            href={item.url}
-                            className="block px-5 py-3 border-b last:border-0 border-slate-200"
-                            onClick={() => setMobileMenuOpen(false)}
-                          >
-                            <div className="font-medium">{item.title}</div>
-                            <div className="text-sm text-slate-500">{item.description}</div>
-                          </a>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                ) : (
+                <li key={link.id}>
                   <a
-                    key={link.id}
                     href={link.url}
-                    className="block py-4 px-3 hover:bg-slate-100 rounded-lg font-medium text-lg mb-2"
-                    onClick={() => setMobileMenuOpen(false)}
+                    onClick={(e) => handleLinkClick(e, link.url)}
+                    className={`block py-3 px-4 rounded-lg font-medium text-base mb-1 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 ${
+                      activeSection === link.url 
+                        ? 'bg-primary-50 text-primary-600' 
+                        : 'hover:bg-slate-50 text-slate-700'
+                    }`}
+                    aria-current={activeSection === link.url ? 'page' : undefined}
                   >
                     {link.title}
                   </a>
-                )
+                </li>
               ))}
-            </div>
-            
-            {/* Mobile menu footer */}
-            <div className="p-6 border-t border-slate-200">
-              <a 
-                href="#contact" 
-                className="block py-4 px-5 text-center text-white font-medium text-lg rounded-lg shadow-sm 
-                  bg-gradient-to-r from-teal-500 to-blue-600 hover:from-teal-600 hover:to-blue-700"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                Contact Us
-              </a>
-            </div>
+              <li>
+                <a 
+                  href="#contact" 
+                  onClick={(e) => handleLinkClick(e, '#contact')}
+                  className="block mt-3 py-3 px-4 text-center text-white font-medium rounded-lg bg-gradient-to-r from-primary-600 to-secondary-600 shadow-sm hover:shadow-md transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2"
+                >
+                  Contact Us
+                </a>
+              </li>
+            </ul>
           </div>
         </div>
       </div>
     </header>
   );
 };
+
+// Throttle function to limit scroll event frequency
+function throttle(func, limit) {
+  let inThrottle;
+  return function(...args) {
+    if (!inThrottle) {
+      func.apply(this, args);
+      inThrottle = true;
+      setTimeout(() => (inThrottle = false), limit);
+    }
+  };
+}
 
 export default Navbar;

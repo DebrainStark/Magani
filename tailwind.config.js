@@ -37,6 +37,56 @@ export default {
           950: '#172554',
         },
       },
+      // New spacing system - using consistent increments
+      spacing: {
+        // Base spacing unit: 4px (0.25rem)
+        'base': '0.25rem',
+        
+        // Main spacing increments
+        '1x': '0.25rem',  // 4px
+        '2x': '0.5rem',   // 8px
+        '3x': '0.75rem',  // 12px
+        '4x': '1rem',     // 16px
+        '5x': '1.25rem',  // 20px
+        '6x': '1.5rem',   // 24px
+        '8x': '2rem',     // 32px
+        '10x': '2.5rem',  // 40px
+        '12x': '3rem',    // 48px
+        '16x': '4rem',    // 64px
+        '20x': '5rem',    // 80px
+        '24x': '6rem',    // 96px
+        '32x': '8rem',    // 128px
+        '40x': '10rem',   // 160px
+        '48x': '12rem',   // 192px
+        '64x': '16rem',   // 256px
+      },
+      // Standardized line heights
+      lineHeight: {
+        'tight': 1.2,
+        'base': 1.5,
+        'relaxed': 1.75,
+      },
+      // Consistent border radius
+      borderRadius: {
+        'none': '0',
+        'sm': '0.25rem',
+        'md': '0.5rem',
+        'lg': '1rem',
+        'xl': '1.5rem',
+        '2xl': '2rem',
+        'full': '9999px',
+      },
+      // Enhanced box shadows
+      boxShadow: {
+        'sm': '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
+        'DEFAULT': '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+        'md': '0 6px 10px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+        'lg': '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+        'xl': '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+        '2xl': '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+        'inner': 'inset 0 2px 4px 0 rgba(0, 0, 0, 0.06)',
+        'none': 'none',
+      },
     },
   },
   plugins: [],

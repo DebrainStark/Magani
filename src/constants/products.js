@@ -1,5 +1,3 @@
-// src/constants/products.js
-
 export const productsData = [
   {
     id: 1,

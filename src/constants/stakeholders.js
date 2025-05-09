@@ -1,5 +1,3 @@
-// src/constants/stakeholders.js
-
 export const stakeholdersData = [
   {
     id: 'payers',

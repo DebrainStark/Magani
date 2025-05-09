@@ -1,4 +1,3 @@
-// src/components/sections/Products.jsx
 import React, { useState, useEffect, useRef, memo, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -90,33 +89,46 @@ const Card = memo(
   }
 );
 
-// Badge component
-const Badge = ({ children, color = "indigo", className = "" }) => {
-  const colorClasses = {
-    indigo: "bg-indigo-50 text-indigo-700 border-indigo-100",
-    blue: "bg-blue-50 text-blue-700 border-blue-100",
-    teal: "bg-teal-50 text-teal-700 border-teal-100",
-    purple: "bg-purple-50 text-purple-700 border-purple-100",
+// Badge component with updated colors
+const Badge = ({ children, color = "primary", className = "" }) => {
+  // Updated color mapping to use our theme colors
+  const getColorClasses = () => {
+    switch (color) {
+      case 'primary':
+        return "bg-primary-50 text-primary-700 border-primary-100";
+      case 'secondary':
+        return "bg-secondary-50 text-secondary-700 border-secondary-100";
+      case 'indigo':
+        return "bg-indigo-50 text-indigo-700 border-indigo-100";
+      case 'blue':
+        return "bg-blue-50 text-blue-700 border-blue-100";
+      case 'teal':
+        return "bg-teal-50 text-teal-700 border-teal-100";
+      case 'purple':
+        return "bg-purple-50 text-purple-700 border-purple-100";
+      default:
+        return "bg-slate-50 text-slate-700 border-slate-100";
+    }
   };
 
   return (
     <span
-      className={`inline-flex px-3 py-1.5 rounded-full text-sm font-medium ${colorClasses[color]} shadow-sm border ${className}`}
+      className={`inline-flex px-3 py-1.5 rounded-full text-sm font-medium ${getColorClasses()} shadow-sm border ${className}`}
     >
       {children}
     </span>
   );
 };
 
-// Feature card component
+// Feature card component with updated colors
 const FeatureCard = memo(({ feature, index, iconType }) => {
   // Create an array of icon components
   const icons = {
-    Shield: <Shield size={16} className="text-indigo-600" />,
-    Clock: <Clock size={16} className="text-indigo-600" />,
-    BarChart: <BarChart size={16} className="text-indigo-600" />,
-    Activity: <Activity size={16} className="text-indigo-600" />,
-    Database: <Database size={16} className="text-indigo-600" />,
+    Shield: <Shield size={16} className="text-primary-600" />,
+    Clock: <Clock size={16} className="text-primary-600" />,
+    BarChart: <BarChart size={16} className="text-primary-600" />,
+    Activity: <Activity size={16} className="text-primary-600" />,
+    Database: <Database size={16} className="text-primary-600" />,
   };
 
   // Pick an icon based on the type or index
@@ -126,7 +138,7 @@ const FeatureCard = memo(({ feature, index, iconType }) => {
 
   return (
     <motion.div
-      className="flex items-start p-4 rounded-xl border border-slate-100 bg-white hover:border-indigo-100 hover:bg-indigo-50/30 transition-all duration-300"
+      className="flex items-start p-4 rounded-xl border border-slate-100 bg-white hover:border-primary-100 hover:bg-primary-50/30 transition-all duration-300"
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3, delay: index * 0.05 }}
@@ -136,7 +148,7 @@ const FeatureCard = memo(({ feature, index, iconType }) => {
           "0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.03)",
       }}
     >
-      <div className="flex-shrink-0 w-9 h-9 rounded-xl bg-indigo-100 flex items-center justify-center mr-4">
+      <div className="flex-shrink-0 w-9 h-9 rounded-xl bg-primary-100 flex items-center justify-center mr-4">
         {IconComponent}
       </div>
       <div>
@@ -146,12 +158,13 @@ const FeatureCard = memo(({ feature, index, iconType }) => {
   );
 });
 
-// Benefit card component
+// Benefit card component with updated color gradients
 const BenefitCard = memo(({ benefit, index }) => {
+  // Updated color gradients to use our theme colors
   const colors = [
-    "from-indigo-500 to-blue-500",
-    "from-blue-500 to-teal-500",
-    "from-teal-500 to-indigo-500",
+    "from-primary-500 to-secondary-500",
+    "from-secondary-500 to-primary-500",
+    "from-primary-500 to-purple-500",
   ];
   const bgColor = colors[index % colors.length];
 
@@ -183,13 +196,13 @@ const BenefitCard = memo(({ benefit, index }) => {
   );
 });
 
-// Product tab component
+// Product tab component with updated active state colors
 const ProductTab = memo(({ product, isActive, onClick }) => {
   return (
     <motion.button
       className={`px-5 py-3 rounded-xl text-sm sm:text-base font-medium transition-all duration-200 ${
         isActive
-          ? "bg-white text-indigo-700 shadow-md"
+          ? "bg-white text-primary-700 shadow-md"
           : "text-slate-600 hover:text-slate-900 hover:bg-white/50"
       }`}
       onClick={onClick}
@@ -212,14 +225,14 @@ const ProductTab = memo(({ product, isActive, onClick }) => {
   );
 });
 
-// Mobile product card component
+// Mobile product card component with updated active state colors
 const MobileProductCard = memo(({ product, isActive, onClick }) => {
   return (
     <motion.div
       className={`p-4 rounded-xl border cursor-pointer transition-all duration-300 ${
         isActive
-          ? "border-indigo-200 bg-indigo-50/50"
-          : "border-slate-100 bg-white hover:border-indigo-100 hover:bg-indigo-50/30"
+          ? "border-primary-200 bg-primary-50/50"
+          : "border-slate-100 bg-white hover:border-primary-100 hover:bg-primary-50/30"
       }`}
       whileHover={{
         scale: 1.02,
@@ -245,7 +258,7 @@ const MobileProductCard = memo(({ product, isActive, onClick }) => {
         </div>
         <motion.div
           className={`w-6 h-6 rounded-full flex items-center justify-center ${
-            isActive ? "bg-indigo-500" : "bg-slate-100"
+            isActive ? "bg-primary-500" : "bg-slate-100"
           }`}
           animate={{ rotate: isActive ? 90 : 0 }}
         >
@@ -286,18 +299,19 @@ const Products = () => {
   return (
     <section
       ref={sectionRef}
-      className="py-20 sm:py-28 px-4 sm:px-6 bg-gradient-to-b from-white to-slate-50 relative overflow-hidden"
+      id="product"
+      className="py-20 sm:py-28 bg-gradient-to-b from-white to-slate-50 relative overflow-hidden"
       aria-labelledby="products-section-title"
     >
       {/* Enhanced background elements with animated gradients */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute inset-0 opacity-60 bg-[radial-gradient(ellipse_at_top,rgba(79,70,229,0.15),transparent_50%),radial-gradient(ellipse_at_bottom,rgba(165,243,252,0.15),transparent_50%)]"></div>
-        <div className="absolute top-40 -right-40 w-96 h-96 bg-indigo-50 rounded-full mix-blend-multiply blur-3xl opacity-70 animate-blob"></div>
-        <div className="absolute -bottom-20 -left-20 w-80 h-80 bg-blue-50 rounded-full mix-blend-multiply blur-3xl opacity-70 animate-blob animation-delay-2000"></div>
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-teal-50 rounded-full mix-blend-multiply blur-3xl opacity-70 animate-blob animation-delay-4000"></div>
+        <div className="absolute inset-0 opacity-60 bg-[radial-gradient(ellipse_at_top,rgba(22,163,74,0.15),transparent_50%),radial-gradient(ellipse_at_bottom,rgba(37,99,235,0.15),transparent_50%)]"></div>
+        <div className="absolute top-40 -right-40 w-96 h-96 bg-primary-50 rounded-full mix-blend-multiply blur-3xl opacity-70 animate-blob"></div>
+        <div className="absolute -bottom-20 -left-20 w-80 h-80 bg-secondary-50 rounded-full mix-blend-multiply blur-3xl opacity-70 animate-blob animation-delay-2000"></div>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-purple-50 rounded-full mix-blend-multiply blur-3xl opacity-70 animate-blob animation-delay-4000"></div>
       </div>
 
-      <div className="max-w-6xl mx-auto relative z-10">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 xl:max-w-6xl relative z-10">
         {/* Section Header */}
         <motion.div
           className="text-center mb-16"
@@ -305,9 +319,9 @@ const Products = () => {
           animate={isVisible ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.5, ease: "easeOut" }}
         >
-          <Badge color="indigo" className="mb-4">
+          <Badge color="primary" className="mb-4">
             <span className="flex items-center gap-1.5">
-              <Star size={12} className="text-indigo-500" />
+              <Star size={12} className="text-primary-500" />
               Innovative Healthcare Solutions
             </span>
           </Badge>
@@ -363,7 +377,7 @@ const Products = () => {
             >
               {/* Top Banner */}
               <div className="h-20 sm:h-24 relative overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-r from-indigo-600 to-blue-600">
+                <div className="absolute inset-0 bg-gradient-to-r from-primary-600 to-secondary-600">
                   {/* Animated pattern overlay */}
                   <div className="absolute inset-0 opacity-20">
                     <svg
@@ -394,7 +408,7 @@ const Products = () => {
 
                 {/* Product Badge */}
                 <div className="absolute -bottom-10 left-8 w-20 h-20 sm:w-24 sm:h-24 bg-white rounded-2xl shadow-lg flex items-center justify-center border-4 border-white transform -rotate-3 overflow-hidden">
-                  <div className="absolute inset-0 bg-gradient-to-br from-indigo-50 to-white"></div>
+                  <div className="absolute inset-0 bg-gradient-to-br from-primary-50 to-white"></div>
                   <img
                     src={activeProduct?.icon}
                     alt=""
@@ -402,8 +416,6 @@ const Products = () => {
                     aria-hidden="true"
                   />
                 </div>
-
-                {/* Product type badge */}
               </div>
 
               {/* Product Content */}
@@ -424,7 +436,7 @@ const Products = () => {
                 {/* Features Grid */}
                 <div className="mb-10">
                   <h4 className="text-lg font-semibold text-slate-800 mb-4 flex items-center">
-                    <span className="w-6 h-6 rounded-lg bg-indigo-100 text-indigo-600 flex items-center justify-center mr-2">
+                    <span className="w-6 h-6 rounded-lg bg-primary-100 text-primary-600 flex items-center justify-center mr-2">
                       <ChevronRight size={14} />
                     </span>
                     Key Features
@@ -443,7 +455,7 @@ const Products = () => {
                 {/* Benefits Section */}
                 <div className="mb-10 border-t border-slate-100 pt-8">
                   <h4 className="text-lg font-semibold text-slate-800 mb-4 flex items-center">
-                    <span className="w-6 h-6 rounded-lg bg-indigo-100 text-indigo-600 flex items-center justify-center mr-2">
+                    <span className="w-6 h-6 rounded-lg bg-primary-100 text-primary-600 flex items-center justify-center mr-2">
                       <ChevronRight size={14} />
                     </span>
                     Benefits
@@ -463,7 +475,7 @@ const Products = () => {
                 <div className="flex flex-wrap gap-4 justify-end border-t border-slate-100 pt-6">
                   <Button
                     variant="outline"
-                    className="text-indigo-600 border-indigo-200 hover:bg-indigo-50 transition-colors duration-200"
+                    className="text-primary-600 border-primary-200 hover:bg-primary-50 transition-colors duration-200"
                   >
                     <span className="flex items-center gap-1.5">
                       View Documentation
@@ -471,7 +483,7 @@ const Products = () => {
                   </Button>
                   <Button
                     variant="primary"
-                    className="bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-700 hover:to-indigo-600 text-white shadow-lg shadow-indigo-200 transition-all duration-200"
+                    className="bg-gradient-to-r from-primary-600 to-primary-500 hover:from-primary-700 hover:to-primary-600 text-white shadow-lg shadow-primary-200 transition-all duration-200"
                   >
                     <span className="flex items-center gap-1.5">
                       Get Started
@@ -490,8 +502,8 @@ const Products = () => {
             animate={isVisible ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.5, delay: 0.3, ease: "easeOut" }}
           >
-            <div className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-indigo-50 to-blue-50 rounded-xl border border-indigo-100 shadow-sm">
-              <span className="text-lg font-semibold text-indigo-700">
+            <div className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-primary-50 to-secondary-50 rounded-xl border border-primary-100 shadow-sm">
+              <span className="text-lg font-semibold text-primary-700">
                 Ready to transform your healthcare operations?
               </span>
             </div>
@@ -509,7 +521,7 @@ const Products = () => {
               <Button
                 variant="primary"
                 size="lg"
-                className="bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white shadow-lg shadow-indigo-200/50 transition-all duration-200"
+                className="bg-gradient-to-r from-primary-600 to-secondary-600 hover:from-primary-700 hover:to-secondary-700 text-white shadow-lg shadow-primary-200/50 transition-all duration-200"
               >
                 <span className="flex items-center gap-2">
                   Request a Demo

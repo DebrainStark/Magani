@@ -1,4 +1,3 @@
-// src/components/sections/Stakeholders.jsx
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Users, Building, Briefcase, ArrowRight, CheckCircle, XCircle, Play, ChevronRight, ChevronDown, Zap } from 'lucide-react';
@@ -19,12 +18,48 @@ const EnhancedCard = ({ title, icon: Icon, problem, benefits, color, delay }) =>
     return () => clearTimeout(timer);
   }, [delay]);
 
+  // Safely generate border class
+  const getBorderClass = () => {
+    switch (color.name) {
+      case 'primary':
+        return 'border-primary-200';
+      case 'secondary':
+        return 'border-secondary-200';
+      case 'blue':
+        return 'border-blue-200';
+      case 'purple':
+        return 'border-purple-200';
+      case 'teal':
+        return 'border-teal-200';
+      default:
+        return 'border-slate-200';
+    }
+  };
+
+  // Safely generate tab active border
+  const getActiveTabBorder = () => {
+    switch (color.name) {
+      case 'primary':
+        return 'border-primary-500';
+      case 'secondary':
+        return 'border-secondary-500';
+      case 'blue':
+        return 'border-blue-500';
+      case 'purple':
+        return 'border-purple-500';
+      case 'teal':
+        return 'border-teal-500';
+      default:
+        return 'border-slate-500';
+    }
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 30 }}
       animate={{ opacity: isVisible ? 1 : 0, y: isVisible ? 0 : 30 }}
       transition={{ duration: 0.7, ease: "easeOut" }}
-      className={`relative overflow-hidden rounded-2xl border-2 ${color.border} bg-white shadow-xl hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 group`}
+      className={`relative overflow-hidden rounded-2xl border-2 ${getBorderClass()} bg-white shadow-xl hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 group`}
     >
       {/* Top decoration bar */}
       <div className={`h-3 w-full ${color.bg}`}></div>
@@ -44,7 +79,7 @@ const EnhancedCard = ({ title, icon: Icon, problem, benefits, color, delay }) =>
             onClick={() => setActiveTab('benefits')}
             className={`flex items-center py-3 px-4 text-sm font-medium border-b-2 -mb-px transition-colors ${
               activeTab === 'benefits' 
-                ? `${color.text} border-${color.bg.split('-')[1]}` 
+                ? `${color.text} ${getActiveTabBorder()}` 
                 : 'text-slate-500 border-transparent hover:text-slate-700'
             }`}
           >
@@ -130,17 +165,20 @@ const getStakeholderIcon = (type) => {
   }
 };
 
+// Updated color mapping using our design system
 const getStakeholderColor = (type) => {
   switch (type) {
     case 'patients':
       return {
-        border: 'border-blue-200',
-        bg: 'bg-blue-500',
-        bgLight: 'bg-blue-50',
-        text: 'text-blue-600'
+        name: 'secondary',
+        border: 'border-secondary-200',
+        bg: 'bg-secondary-500',
+        bgLight: 'bg-secondary-50',
+        text: 'text-secondary-600'
       };
     case 'providers':
       return {
+        name: 'purple',
         border: 'border-purple-200',
         bg: 'bg-purple-500',
         bgLight: 'bg-purple-50',
@@ -148,13 +186,15 @@ const getStakeholderColor = (type) => {
       };
     case 'payers':
       return {
-        border: 'border-teal-200',
-        bg: 'bg-teal-500',
-        bgLight: 'bg-teal-50',
-        text: 'text-teal-600'
+        name: 'primary',
+        border: 'border-primary-200',
+        bg: 'bg-primary-500',
+        bgLight: 'bg-primary-50',
+        text: 'text-primary-600'
       };
     default:
       return {
+        name: 'slate',
         border: 'border-slate-200',
         bg: 'bg-slate-500',
         bgLight: 'bg-slate-50',
@@ -191,18 +231,10 @@ const AnimatedSectionHeading = () => {
       <SectionTitle 
         title="Stakeholder Benefits" 
         accent="indigo"
+        subtitle= "Our solution addresses critical pain points and delivers measurable value to all healthcare ecosystem participants"
       />
       
-      <motion.p
-        initial={{ opacity: 0, y: 10 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        transition={{ duration: 0.5, delay: 0.3 }}
-        className="mt-6 max-w-3xl mx-auto text-xl text-slate-600"
-      >
-        Our solution addresses critical pain points and delivers measurable value 
-        to all healthcare ecosystem participants
-      </motion.p>
+      
     </motion.div>
   );
 };
@@ -216,20 +248,20 @@ const Stakeholders = () => {
   };
 
   return (
-    <section id="solutions" className="py-24 px-6 bg-gradient-to-br from-gray-50 to-slate-100 relative overflow-hidden">
+    <section id="stakeholder" className="py-24 px-6 bg-gradient-to-br from-gray-50 to-slate-100 relative overflow-hidden">
       {/* Enhanced decorative elements with animation */}
       <div className="absolute inset-0 pointer-events-none">
         <motion.div
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 0.3, scale: 1 }}
           transition={{ duration: 2, repeat: Infinity, repeatType: "reverse" }}
-          className="absolute top-20 left-10 w-64 h-64 rounded-full border-8 border-blue-100"
+          className="absolute top-20 left-10 w-64 h-64 rounded-full border-8 border-secondary-100"
         ></motion.div>
         <motion.div
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 0.3, scale: 1 }}
           transition={{ duration: 2.5, repeat: Infinity, repeatType: "reverse", delay: 0.5 }}
-          className="absolute bottom-10 right-10 w-96 h-96 rounded-full border-8 border-teal-100"
+          className="absolute bottom-10 right-10 w-96 h-96 rounded-full border-8 border-primary-100"
         ></motion.div>
         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full border-16 border-purple-100 opacity-20"></div>
         
@@ -237,7 +269,7 @@ const Stakeholders = () => {
         <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cGF0aCBkPSJNNTkuNSAwaC01OUMuMiAwIDAgLjIgMCAuNXY1OWMwIC4zLjIuNS41LjVoNTljLjMgMCAuNS0uMi41LS41Vi41YzAtLjMtLjItLjUtLjUtLjV6TTEgMWg1OHY1OEgxVjF6IiBmaWxsPSIjZjFmNWY5IiBmaWxsLW9wYWNpdHk9IjAuMiIvPjwvc3ZnPg==')] opacity-10"></div>
       </div>
       
-      <div className="max-w-7xl mx-auto relative z-10">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 xl:max-w-7xl relative z-10">
         <AnimatedSectionHeading />
         
         {/* Desktop view - grid layout */}

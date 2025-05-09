@@ -32,14 +32,15 @@ const Hero = () => {
         : "opacity-0 translate-y-4"
     }`;
 
+  // Updated tabData with primary/secondary colors from our scheme
   const tabData = {
     payers: {
       title: "Control MLR",
       description:
-        "Reduce MLRs from 140% to profitable levels usign automation for verification, fraud prevention, and forecasting.",
+        "Reduce MLRs from 140% to profitable levels using automation for verification, fraud prevention, and forecasting.",
       stat: "80% MLR Improvement",
       icon: <TrendingUp size={20} />,
-      color: "blue",
+      color: "primary",
       centerValue: "140→60",
     },
     providers: {
@@ -48,7 +49,7 @@ const Hero = () => {
         "Keep expenses within capitation limits and prevent claim denials with instant eligibility verification.",
       stat: "99% Verification Accuracy",
       icon: <CheckCircle size={20} />,
-      color: "green",
+      color: "secondary",
       centerValue: "99%",
     },
     patients: {
@@ -57,28 +58,48 @@ const Hero = () => {
         "Eliminate long wait times and unexpected out-of-pocket payments with real-time coverage verification.",
       stat: "Hours → Seconds",
       icon: <Clock size={20} />,
-      color: "amber",
+      color: "amber", // We'll handle this special case
       centerValue: "24/7",
     },
   };
 
-  const features = [];
-
-  // const nigeriaFeatures = [
-  //   "Works Offline",
-  //   "Power-Efficient",
-  //   "₦40-100K Devices",
-  //   "Nigeria-Specific Data",
-  //   "WhatsApp-like UI",
-  // ];
+  // Function to safely get color classes
+  const getColorClasses = (tab) => {
+    const color = tabData[tab].color;
+    if (color === 'amber') {
+      return {
+        bg50: 'bg-amber-50',
+        bg100: 'bg-amber-100', 
+        text600: 'text-amber-600',
+        text700: 'text-amber-700',
+        border500: 'border-amber-500'
+      };
+    } else if (color === 'primary') {
+      return {
+        bg50: 'bg-primary-50',
+        bg100: 'bg-primary-100',
+        text600: 'text-primary-600',
+        text700: 'text-primary-700',
+        border500: 'border-primary-500'
+      };
+    } else {
+      return {
+        bg50: 'bg-secondary-50',
+        bg100: 'bg-secondary-100',
+        text600: 'text-secondary-600',
+        text700: 'text-secondary-700',
+        border500: 'border-secondary-500'
+      };
+    }
+  };
 
   return (
     <section
       ref={heroRef}
       id="healthcare-hero"
-      className="relative min-h-[90vh] flex items-center bg-gradient-to-br from-slate-50 to-white overflow-hidden font-sans pt-40 md:pt-48"
+      className="relative min-h-[90vh] flex items-center bg-gradient-to-br from-slate-50 to-white overflow-hidden font-sans pt-16 md:pt-20"
     >
-      {/* Optimized background with priority loading */}
+      {/* Background with priority loading */}
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute inset-0 overflow-hidden">
           <img
@@ -94,24 +115,24 @@ const Hero = () => {
           <div className="absolute inset-0 bg-slate-50/40 z-10"></div>
         </div>
 
-        {/* Animated color accents */}
-        <div className="absolute top-1/4 left-0 w-72 h-72 bg-blue-100 rounded-full opacity-40 blur-3xl z-20 mix-blend-multiply animate-float"></div>
-        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-teal-100 rounded-full opacity-30 blur-3xl z-20 mix-blend-multiply animate-float-delay"></div>
+        {/* Animated color accents - using Tailwind's animate utilities */}
+        <div className="absolute top-1/4 left-0 w-72 h-72 bg-primary-100 rounded-full opacity-40 blur-3xl z-20 mix-blend-multiply animate-[float_8s_ease-in-out_infinite]"></div>
+        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-secondary-100 rounded-full opacity-30 blur-3xl z-20 mix-blend-multiply animate-[float_8s_ease-in-out_2s_infinite]"></div>
       </div>
 
-      <div className="w-full max-w-5xl mx-auto px-4 sm:px-6 relative z-10">
-        <div className="space-y-12">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 xl:max-w-6xl relative z-10">
+        <div className="space-y-8">
           {/* Header with improved semantics */}
-          <header className="text-center space-y-6">
+          <header className="text-center mb-6">
             <div className={fadeIn(200)}>
-              <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-slate-900 leading-tight">
+            <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-slate-900 leading-tight mt-12">
                 <span className="text-blue-600">
                   Automating Healthcare Administration
                 </span>
-              </h1>
+            </h1>
             </div>
 
-            <div className={fadeIn(300)}>
+            <div className={`${fadeIn(300)} mt-4`}>
               <p className="max-w-2xl mx-auto text-slate-600 text-base md:text-lg leading-relaxed">
                 Harnessing technology to cut costs and streamline health
                 insurance in Nigeria, making it more efficient, accessible, and
@@ -124,34 +145,38 @@ const Hero = () => {
           <div className={fadeIn(400)}>
             <div className="bg-white max-w-3xl mx-auto rounded-xl shadow-sm border border-slate-100 overflow-hidden">
               <div className="flex border-b">
-                {Object.keys(tabData).map((tab) => (
-                  <button
-                    key={tab}
-                    onClick={() => setActiveTab(tab)}
-                    className={`flex-1 py-3 px-2 text-sm font-medium transition-colors ${
-                      activeTab === tab
-                        ? `bg-${tabData[tab].color}-50 text-${tabData[tab].color}-700 border-b-2 border-${tabData[tab].color}-500`
-                        : "text-slate-600 hover:bg-slate-50"
-                    }`}
-                    aria-label={`Show ${tab} content`}
-                  >
-                    For {tab.charAt(0).toUpperCase() + tab.slice(1)}
-                  </button>
-                ))}
+                {Object.keys(tabData).map((tab) => {
+                  const colorClasses = getColorClasses(tab);
+                  
+                  return (
+                    <button
+                      key={tab}
+                      onClick={() => setActiveTab(tab)}
+                      className={`flex-1 py-2 px-1 text-sm font-medium transition-colors ${
+                        activeTab === tab
+                          ? `${colorClasses.bg50} ${colorClasses.text700} border-b-2 ${colorClasses.border500}`
+                          : "text-slate-600 hover:bg-slate-50"
+                      }`}
+                      aria-label={`Show ${tab} content`}
+                    >
+                      For {tab.charAt(0).toUpperCase() + tab.slice(1)}
+                    </button>
+                  );
+                })}
               </div>
 
-              <div className="p-6">
-                <div className="flex flex-col md:flex-row gap-8 items-center">
+              <div className="p-4">
+                <div className="flex flex-col md:flex-row gap-6 items-center">
                   <div className="text-center md:text-left flex-1">
-                    <h3 className="text-2xl font-bold text-slate-900 mb-3">
+                    <h3 className="text-2xl font-bold text-slate-900 mb-2">
                       {tabData[activeTab].title}
                     </h3>
                     <p className="text-slate-600 leading-relaxed">
                       {tabData[activeTab].description}
                     </p>
-                    <div className="mt-6 flex justify-center md:justify-start">
+                    <div className="mt-4 flex justify-center md:justify-start">
                       <span
-                        className={`flex items-center gap-2 text-lg font-bold text-${tabData[activeTab].color}-600`}
+                        className={`flex items-center gap-1 text-lg font-bold ${getColorClasses(activeTab).text600}`}
                       >
                         {tabData[activeTab].icon}
                         {tabData[activeTab].stat}
@@ -159,13 +184,13 @@ const Hero = () => {
                     </div>
                   </div>
                   <div
-                    className={`flex-shrink-0 w-32 h-32 bg-${tabData[activeTab].color}-50 rounded-full flex items-center justify-center`}
+                    className={`flex-shrink-0 w-32 h-32 ${getColorClasses(activeTab).bg50} rounded-full flex items-center justify-center`}
                   >
                     <div
-                      className={`w-20 h-20 bg-${tabData[activeTab].color}-100 rounded-full flex items-center justify-center`}
+                      className={`w-20 h-20 ${getColorClasses(activeTab).bg100} rounded-full flex items-center justify-center`}
                     >
                       <div
-                        className={`text-2xl font-bold text-${tabData[activeTab].color}-700`}
+                        className={`text-2xl font-bold ${getColorClasses(activeTab).text700}`}
                       >
                         {tabData[activeTab].centerValue}
                       </div>
@@ -173,11 +198,11 @@ const Hero = () => {
                   </div>
                 </div>
 
-                <div className="mt-8 pt-6 border-t border-slate-100">
-                  <div className="flex flex-wrap gap-3 justify-center md:justify-start">
+                <div className="mt-6 pt-4 border-t border-slate-100">
+                  <div className="flex flex-wrap gap-2 justify-center md:justify-start">
                     <Button
                       variant="primary"
-                      size="md"
+                      size="default"
                       icon={
                         <ArrowRight
                           size={16}
@@ -191,96 +216,52 @@ const Hero = () => {
                     </Button>
                     <Button
                       variant="secondary"
-                      size="md"
+                      size="default"
                       className="group hover:bg-slate-100 transition-colors"
-                    ></Button>
+                    >
+                      Learn More
+                    </Button>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
-
-          {/* Features grid with extracted data */}
-          <div className={fadeIn(500)}>
-            {/* <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 max-w-2xl mx-auto">
-              {features.map((feature, index) => (
-                <div
-                  key={index}
-                  className="bg-white rounded-lg p-4 border border-slate-100 text-center shadow-xs hover:shadow-sm transition-shadow"
-                >
-                  <div
-                    className={`inline-flex h-10 w-10 rounded-full bg-${feature.color}-50 items-center justify-center mx-auto`}
-                  >
-                    <span
-                      className={`text-${feature.color}-700 font-bold text-sm`}
-                    >
-                      {feature.value}
-                    </span>
-                  </div>
-                  <p className="mt-2 text-xs text-slate-500">{feature.label}</p>
-                </div>
-              ))}
-            </div> */}
           </div>
 
           {/* Nigeria-specific features */}
           <div className={fadeIn(600)}>
-            <div className="text-center mb-4">
+            <div className="text-center mb-2">
               <span className="text-xs uppercase tracking-wider text-slate-500 font-medium">
                 Designed for Nigeria
               </span>
             </div>
-            {/* <div className="flex flex-wrap justify-center gap-2 max-w-2xl mx-auto">
-              {nigeriaFeatures.map((feature, index) => (
-                <span
-                  key={index}
-                  className="px-3 py-1.5 text-xs bg-white border border-slate-200 rounded-full text-slate-700 hover:bg-slate-50 transition-colors"
-                >
-                  {feature}
-                </span>
-              ))}
-            </div> */}
           </div>
 
           {/* Visual connection element */}
           <div className={fadeIn(700)}>
-            <div className="relative h-24 mb-6 mt-8">
+            <div className="relative h-24 mb-4 mt-6">
               <div className="absolute left-0 right-0 flex justify-between items-center">
-                <div className="w-14 h-14 bg-blue-600 rounded-full flex items-center justify-center text-white text-sm font-bold z-10 shadow-md hover:scale-105 transition-transform">
+                <div className="w-14 h-14 bg-primary-600 rounded-full flex items-center justify-center text-white text-sm font-bold z-10 shadow-md hover:scale-105 transition-transform">
                   HMO
                 </div>
-                <div className="h-0.5 flex-grow bg-gradient-to-r from-blue-600 via-slate-300 to-teal-600 mx-2"></div>
-                <div className="w-14 h-14 bg-teal-600 rounded-full flex items-center justify-center text-white text-sm font-bold z-10 shadow-md hover:scale-105 transition-transform">
+                <div className="h-0.5 flex-grow bg-gradient-to-r from-primary-600 via-slate-300 to-secondary-600 mx-2"></div>
+                <div className="w-14 h-14 bg-secondary-600 rounded-full flex items-center justify-center text-white text-sm font-bold z-10 shadow-md hover:scale-105 transition-transform">
                   Provider
                 </div>
-                <div className="h-0.5 flex-grow bg-gradient-to-r from-teal-600 via-slate-300 to-amber-600 mx-2"></div>
+                <div className="h-0.5 flex-grow bg-gradient-to-r from-secondary-600 via-slate-300 to-amber-600 mx-2"></div>
                 <div className="w-14 h-14 bg-amber-600 rounded-full flex items-center justify-center text-white text-sm font-bold z-10 shadow-md hover:scale-105 transition-transform">
                   Patient
                 </div>
               </div>
-              {/* <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-20 h-20 bg-white border-4 border-slate-100 rounded-full flex items-center justify-center shadow-xl z-20 hover:scale-105 transition-transform">
-                <span className="text-slate-900 font-bold">Magani</span>
-              </div> */}
             </div>
           </div>
         </div>
       </div>
 
-      <style jsx global>{`
+      {/* Add the animation keyframes */}
+      <style jsx>{`
         @keyframes float {
-          0%,
-          100% {
-            transform: translateY(0);
-          }
-          50% {
-            transform: translateY(-10px);
-          }
-        }
-        .animate-float {
-          animation: float 8s ease-in-out infinite;
-        }
-        .animate-float-delay {
-          animation: float 8s ease-in-out 2s infinite;
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-10px); }
         }
       `}</style>
     </section>
