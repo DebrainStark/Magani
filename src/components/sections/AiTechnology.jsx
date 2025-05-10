@@ -1,562 +1,609 @@
-import React, { useState, useEffect, useRef, memo } from 'react';
+import React, { useState, useEffect, useRef, useCallback, memo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Brain, Zap, Database, Wifi, Globe, ShieldCheck, Cpu, MapPin, CheckCircle2, BarChart2, Lock, Sparkles } from 'lucide-react';
+import { Brain, Zap, Database, Wifi, Globe, ShieldCheck, Cpu, CheckCircle2, X, Plus, ArrowDown } from 'lucide-react';
 import SectionTitle from '../common/SectionTitle';
 
-// Custom hook for intersection observer
-const useIntersectionObserver = (options = {}) => {
-  const [isIntersecting, setIsIntersecting] = useState(false);
-  const ref = useRef(null);
+
+// Optimized useMediaQuery hook
+const useMediaQuery = (query) => {
+  const [matches, setMatches] = useState(false);
 
   useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        setIsIntersecting(entry.isIntersecting);
-        if (entry.isIntersecting && options.unobserveOnIntersect) {
-          observer.unobserve(entry.target);
-        }
-      },
-      options
-    );
+    const media = window.matchMedia(query);
+    setMatches(media.matches); // Set initial value immediately
+    
+    const listener = () => setMatches(media.matches);
+    media.addEventListener('change', listener);
+    return () => media.removeEventListener('change', listener);
+  }, [query]); // Only depend on query
 
-    const currentRef = ref.current;
-    if (currentRef) {
-      observer.observe(currentRef);
-    }
-
-    return () => {
-      if (currentRef) {
-        observer.unobserve(currentRef);
-      }
-    };
-  }, [options.threshold, options.root, options.rootMargin, options.unobserveOnIntersect]);
-
-  return [ref, isIntersecting];
+  return matches;
 };
 
-// Enhanced BentoBox component with Framer Motion
-const BentoBox = memo(({ className = "", children, delay = 0, hover = true }) => {
-  return (
-    <motion.div
-      className={`bg-white rounded-2xl shadow-lg overflow-hidden ${className}`}
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-100px" }}
-      transition={{ duration: 0.5, delay: delay * 0.1, ease: "easeOut" }}
-      whileHover={hover ? { y: -5, transition: { duration: 0.2 } } : undefined}
-    >
-      {children}
-    </motion.div>
-  );
-});
+// Shared IntersectionObserver hook
+const useIntersectionObserver = () => {
+  const observerRef = useRef(null);
+  
+  if (!observerRef.current && typeof window !== 'undefined') {
+    observerRef.current = new IntersectionObserver(
+      (entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            const element = entry.target;
+            const delay = element.dataset.delay || 0;
+            element.style.opacity = 1;
+            element.style.transform = 'translateY(0)';
+            observerRef.current.unobserve(element);
+          }
+        });
+      },
+      { threshold: 0.1 }
+    );
+  }
+  
+  return observerRef.current;
+};
 
-// Reusable feature item component
-const FeatureItem = memo(({ icon: Icon, text, dark = false }) => (
-  <div className="flex items-start group">
-    <div className={`w-7 h-7 rounded-full flex-shrink-0 flex items-center justify-center mr-3 mt-0.5 transition-colors duration-200 ${
-      dark ? 'bg-white/20 group-hover:bg-white/30' : 'bg-primary-100 group-hover:bg-primary-200'
-    }`}>
-      <Icon size={14} className={dark ? "text-white" : "text-primary-700"} />
+// SVG Patterns Component
+const SvgPatterns = memo(() => (
+  <svg style={{ position: 'absolute', width: 0, height: 0 }}>
+    <defs>
+      <pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse">
+        <path d="M 10 0 L 0 0 0 10" fill="none" stroke="white" strokeWidth="0.5" opacity="0.5" />
+      </pattern>
+      <pattern id="security-grid" width="20" height="20" patternUnits="userSpaceOnUse">
+        <circle cx="10" cy="10" r="1.5" fill="white" opacity="0.5" />
+      </pattern>
+    </defs>
+  </svg>
+));
+
+// Feature icon component
+const FeatureIcon = memo(({ icon: IconComponent, size, className }) => (
+  <IconComponent size={size || 20} className={className} />
+));
+
+// CheckItem component for feature lists
+const CheckItem = memo(({ text, bgColor = "primary" }) => (
+  <div className="flex items-start">
+    <div className={`w-7 h-7 rounded-full flex-shrink-0 flex items-center justify-center mr-3 mt-0.5 bg-${bgColor}-100`}>
+      <CheckCircle2 size={14} className={`text-${bgColor}-700`} />
     </div>
-    <span className={`${dark ? 'text-white' : 'text-slate-700'} text-sm`}>{text}</span>
+    <span className="text-slate-700 text-sm">{text}</span>
   </div>
 ));
 
-// Reusable metric box component with animation
-const MetricBox = memo(({ value, label, color = "primary" }) => {
-  // Updated color mapping to use our theme colors
-  const getGradientClass = () => {
-    switch (color) {
-      case 'primary':
-        return "from-primary-500 to-primary-600";
-      case 'secondary':
-        return "from-secondary-500 to-secondary-600";
-      case 'purple':
-        return "from-purple-500 to-purple-600";
-      default:
-        return "from-primary-500 to-primary-600";
+// Desktop Bento Box Component - optimized
+const BentoBox = memo(({ className, children, delay = 0 }) => {
+  const ref = useRef(null);
+  const observer = useIntersectionObserver();
+  
+  useEffect(() => {
+    if (ref.current && observer) {
+      ref.current.dataset.delay = delay;
+      observer.observe(ref.current);
     }
-  };
+    
+    return () => {
+      if (ref.current && observer) {
+        observer.unobserve(ref.current);
+      }
+    };
+  }, [delay, observer]);
+  
+  return (
+    <div
+      ref={ref}
+      className={`bento-box bg-white rounded-2xl shadow-lg overflow-hidden opacity-0 transform translate-y-5 transition-all duration-500 ${className}`}
+      style={{ transitionDelay: `${delay * 100}ms` }}
+    >
+      {children}
+    </div>
+  );
+});
+
+// MetricCard component for reuse
+const MetricCard = memo(({ value, label, color }) => (
+  <div className="text-center p-5 rounded-xl bg-white relative">
+    <div className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-${color}-500 to-${color}-600`}></div>
+    <div className="text-3xl md:text-4xl font-bold text-slate-800 mb-1">{value}</div>
+    <div className="text-slate-600 font-medium text-sm">{label}</div>
+  </div>
+));
+
+// Mobile Feature Card Component - optimized with memo
+const MobileFeatureCard = memo(({ feature, index, expanded, toggleExpand }) => {
+  const IconComponent = feature.icon;
+  const isExpanded = expanded === index;
   
   return (
     <motion.div 
-      className="text-center p-5 rounded-xl bg-white border border-slate-200 shadow-md relative overflow-hidden"
-      whileHover={{ scale: 1.03, boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1)" }}
-      transition={{ type: "spring", stiffness: 300, damping: 20 }}
+      className={`rounded-2xl overflow-hidden mb-4 shadow-lg relative ${
+        isExpanded ? "bg-white" : `bg-gradient-to-br ${feature.color}`
+      }`}
+      layoutId={`card-container-${index}`}
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0, transition: { delay: index * 0.1 } }}
+      whileTap={{ scale: 0.98 }}
     >
-      {/* Gradient overlay at top */}
-      <div className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r ${getGradientClass()}`}></div>
-      
-      <motion.div
-        initial={{ opacity: 0, scale: 0.8 }}
-        whileInView={{ opacity: 1, scale: 1 }}
-        viewport={{ once: true }}
-        transition={{ type: "spring", stiffness: 300, damping: 15, delay: 0.2 }}
+      {/* Header always visible */}
+      <motion.div 
+        className={`p-4 flex items-center justify-between ${
+          isExpanded ? "border-b border-slate-100" : ""
+        }`}
+        layoutId={`card-header-${index}`}
+        onClick={() => toggleExpand(index)}
       >
-        <div className="text-3xl md:text-4xl font-bold text-slate-800 mb-2">{value}</div>
-        <div className="text-slate-600 font-medium text-sm">{label}</div>
+        <div className="flex items-center">
+          <motion.div
+            layoutId={`card-icon-${index}`}
+            className={`w-10 h-10 rounded-full flex items-center justify-center mr-3 ${
+              isExpanded ? `bg-${feature.bgColor}-100` : "bg-white/20"
+            }`}
+          >
+            <IconComponent size={20} className={isExpanded ? `text-${feature.bgColor}-600` : "text-white"} />
+          </motion.div>
+          <motion.div
+            layoutId={`card-title-${index}`}
+            className={isExpanded ? "text-slate-800 font-bold" : "text-white font-bold"}
+          >
+            {feature.title}
+          </motion.div>
+        </div>
+        
+        <motion.div
+          className={`rounded-full w-7 h-7 flex items-center justify-center ${
+            isExpanded ? "bg-slate-100 text-slate-500" : "bg-white/20 text-white"
+          }`}
+          whileTap={{ scale: 0.9 }}
+        >
+          {isExpanded ? <X size={14} /> : <Plus size={14} />}
+        </motion.div>
       </motion.div>
+      
+      {/* Expandable content */}
+      <AnimatePresence>
+        {isExpanded && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ type: "spring", duration: 0.4 }}
+            className="overflow-hidden"
+          >
+            <div className="p-4 pt-2">
+              <p className="text-slate-600 text-sm mb-4">
+                {feature.description}
+              </p>
+              
+              <div className="grid grid-cols-1 gap-3">
+                {feature.features.map((item, i) => (
+                  <div key={i} className="flex items-center">
+                    <div className={`w-6 h-6 rounded-full bg-${feature.bgColor}-50 flex items-center justify-center mr-3`}>
+                      <CheckCircle2 size={14} className={`text-${feature.bgColor}-500`} />
+                    </div>
+                    <span className="text-slate-700 text-sm">{item}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 });
 
-// Badge component with updated color mapping
-const Badge = memo(({ children, color = "primary" }) => {
-  // Updated color mapping to use our theme colors
-  const getColorClasses = () => {
-    switch (color) {
-      case 'primary':
-        return "bg-primary-50 text-primary-700 border-primary-100";
-      case 'secondary':
-        return "bg-secondary-50 text-secondary-700 border-secondary-100";
-      case 'indigo':
-        return "bg-indigo-50 text-indigo-700 border-indigo-100";
-      case 'slate':
-        return "bg-slate-100 text-slate-700 border-slate-200";
-      default:
-        return "bg-primary-50 text-primary-700 border-primary-100";
-    }
-  };
+// Mobile Metrics Stack - optimized
+const MobileMetricStack = memo(() => {
+  const [activeIndex, setActiveIndex] = useState(0);
+  const metrics = [
+    { value: "97%", label: "Accuracy", color: "primary" },
+    { value: "85%", label: "Time Savings", color: "secondary" },
+    { value: "43%", label: "Cost Reduction", color: "purple" }
+  ];
+  
+  const cycleMetric = useCallback(() => {
+    setActiveIndex((prev) => (prev + 1) % metrics.length);
+  }, [metrics.length]);
   
   return (
-    <motion.span 
-      className={`inline-flex px-5 py-2 rounded-full text-sm font-medium ${getColorClasses()} shadow-sm border`}
-      initial={{ opacity: 0, y: -10 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ duration: 0.5 }}
-      whileHover={{ scale: 1.05 }}
-    >
-      {children}
-    </motion.span>
+    <div className="relative h-40 mb-8">
+      {metrics.map((metric, index) => {
+        const isActive = index === activeIndex;
+        const isNext = (index === (activeIndex + 1) % metrics.length);
+        const isAfterNext = (index === (activeIndex + 2) % metrics.length);
+        
+        let position = {};
+        let zIndex = 0;
+        
+        if (isActive) {
+          position = { top: "0%", left: "0%", right: "0%" };
+          zIndex = 30;
+        } else if (isNext) {
+          position = { top: "10%", left: "5%", right: "5%" };
+          zIndex = 20;
+        } else if (isAfterNext) {
+          position = { top: "20%", left: "10%", right: "10%" };
+          zIndex = 10;
+        }
+        
+        return (
+          <motion.div
+            key={index}
+            className="absolute text-center p-5 pt-4 rounded-xl bg-white border border-slate-200 shadow-lg"
+            style={{ 
+              ...position, 
+              zIndex,
+              opacity: isAfterNext ? 0.5 : 1,
+              pointerEvents: isActive ? "auto" : "none"
+            }}
+            initial={false}
+            animate={{ 
+              top: position.top, 
+              left: position.left, 
+              right: position.right,
+              opacity: isAfterNext ? 0.5 : 1
+            }}
+            transition={{ type: "spring", stiffness: 300, damping: 20 }}
+            onClick={cycleMetric}
+          >
+            <div className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-${metric.color}-500 to-${metric.color}-600`}></div>
+            <div className="text-3xl font-bold text-slate-800 mb-1">{metric.value}</div>
+            <div className="text-slate-600 font-medium text-sm">{metric.label}</div>
+            
+            {isActive && (
+              <motion.div 
+                className="absolute -bottom-3 left-1/2 transform -translate-x-1/2 w-8 h-8 bg-white rounded-full shadow-md flex items-center justify-center text-slate-400"
+                initial={{ y: 0 }}
+                animate={{ y: [0, 5, 0] }}
+                transition={{ repeat: Infinity, duration: 1.5 }}
+              >
+                <ArrowDown size={16} />
+              </motion.div>
+            )}
+          </motion.div>
+        );
+      })}
+    </div>
   );
 });
 
-const AiTechnology = () => {
-  const [sectionRef, isVisible] = useIntersectionObserver({ 
-    threshold: 0.1, 
-    unobserveOnIntersect: true 
-  });
+// Feature data - moved outside component to avoid recreating on each render
+const FEATURES = [
+  {
+    icon: Brain,
+    title: "DeepSeek LLM Model",
+    color: "from-primary-700 to-primary-900",
+    bgColor: "primary",
+    iconColor: "text-primary-200",
+    description: "State-of-the-art AI specifically fine-tuned for Nigerian healthcare with 7B parameters",
+    features: [
+      "7B parameters optimized model",
+      "Mobile-first architecture",
+      "Designed for low-latency",
+      "Privacy-focused design"
+    ]
+  },
+  {
+    icon: ShieldCheck,
+    title: "Enterprise Security",
+    color: "from-secondary-700 to-primary-800",
+    bgColor: "secondary",
+    iconColor: "text-secondary-200",
+    description: "End-to-end encrypted data protection with HIPAA-compliance for all healthcare information",
+    features: [
+      "End-to-end encryption",
+      "HIPAA-compliant",
+      "On-device processing",
+      "Zero data retention"
+    ]
+  },
+  {
+    icon: Globe,
+    title: "Nigeria-Specific",
+    color: "from-green-700 to-green-800",
+    bgColor: "green",
+    iconColor: "text-green-200",
+    description: "Trained specifically on Nigerian healthcare data with localized medical terminology",
+    features: [
+      "Nigerian medical terminology",
+      "Local healthcare protocols",
+      "Regional disease profiles",
+      "Cultural context awareness"
+    ]
+  },
+  {
+    icon: Wifi,
+    title: "Offline Capable",
+    color: "from-blue-700 to-blue-900",
+    bgColor: "blue",
+    iconColor: "text-blue-200",
+    description: "Works without internet connection - perfect for areas with limited connectivity",
+    features: [
+      "Zero internet requirement",
+      "Works during network outages",
+      "Minimal data transfer needed",
+      "Reliable in remote areas"
+    ]
+  }
+];
 
+// Metrics data - constants to avoid recreation
+const METRICS = [
+  { value: "97%", label: "Accuracy", color: "primary" },
+  { value: "85%", label: "Time Savings", color: "secondary" },
+  { value: "43%", label: "Cost Reduction", color: "purple" }
+];
+
+// Main AI Technology Component - optimized
+const AiTechnology = () => {
+  // Detect mobile vs desktop - only rendering what's needed
+  const isMobile = useMediaQuery('(max-width: 767px)');
+  const [expandedCard, setExpandedCard] = useState(null);
+  
+  // Memoized toggle function to avoid recreation
+  const toggleExpand = useCallback((index) => {
+    setExpandedCard(prevExpanded => prevExpanded === index ? null : index);
+  }, []);
+  
+  // Memoized desktop renderer
+  const renderDesktop = useCallback(() => (
+    <div className="grid grid-cols-12 gap-4 md:gap-6">
+      {/* Main Feature: DeepSeek LLM - Large card */}
+      <BentoBox className="col-span-12 lg:col-span-6" delay={0}>
+        <div className="h-full flex flex-col md:flex-row">
+          <div className="bg-gradient-to-br from-primary-700 to-primary-900 text-white p-6 md:p-8 md:w-2/5 flex flex-col justify-center relative overflow-hidden">
+            {/* Pattern overlay */}
+            <div className="absolute inset-0 opacity-10">
+              <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+                <rect width="100" height="100" fill="url(#grid)" />
+              </svg>
+            </div>
+            
+            <div className="relative">
+              <Brain size={40} className="mb-5 text-primary-200" />
+              <h3 className="text-xl md:text-2xl font-bold mb-3">DeepSeek LLM Model</h3>
+              <p className="text-primary-100 text-sm md:text-base">
+                State-of-the-art AI specifically fine-tuned for Nigerian healthcare
+              </p>
+            </div>
+          </div>
+          
+          <div className="p-6 md:p-8 md:w-3/5 bg-white">
+            <div className="grid grid-cols-2 gap-y-6 h-full">
+              <div className="flex items-center">
+                <div className="w-10 h-10 rounded-xl bg-primary-100 flex items-center justify-center mr-3 shadow-sm">
+                  <Database size={18} className="text-primary-700" />
+                </div>
+                <span className="font-medium text-sm md:text-base text-slate-800">7B Parameters</span>
+              </div>
+              
+              <div className="flex items-center">
+                <div className="w-10 h-10 rounded-xl bg-primary-100 flex items-center justify-center mr-3 shadow-sm">
+                  <Cpu size={18} className="text-primary-700" />
+                </div>
+                <span className="font-medium text-sm md:text-base text-slate-800">Mobile Optimized</span>
+              </div>
+              
+              <div className="flex items-center">
+                <div className="w-10 h-10 rounded-xl bg-primary-100 flex items-center justify-center mr-3 shadow-sm">
+                  <ShieldCheck size={18} className="text-primary-700" />
+                </div>
+                <span className="font-medium text-sm md:text-base text-slate-800">Privacy-Focused</span>
+              </div>
+              
+              <div className="flex items-center">
+                <div className="w-10 h-10 rounded-xl bg-primary-100 flex items-center justify-center mr-3 shadow-sm">
+                  <Zap size={18} className="text-primary-700" />
+                </div>
+                <span className="font-medium text-sm md:text-base text-slate-800">Low Latency</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </BentoBox>
+      
+      {/* Security */}
+      <BentoBox className="col-span-12 lg:col-span-6" delay={1}>
+        <div className="h-full bg-gradient-to-br from-secondary-700 to-primary-800 text-white p-6 md:p-8 flex flex-col justify-between relative overflow-hidden">
+          {/* Pattern overlay */}
+          <div className="absolute inset-0 opacity-10">
+            <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+              <rect width="100" height="100" fill="url(#security-grid)" />
+            </svg>
+          </div>
+          
+          <div className="relative">
+            <ShieldCheck size={36} className="mb-5 text-secondary-200" />
+            <h3 className="text-xl md:text-2xl font-bold mb-3">Enterprise Security</h3>
+            <p className="text-secondary-100 text-sm md:text-base mb-6">
+              Enterprise-grade protection for all healthcare data with robust security measures
+            </p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+            <div className="flex items-start group">
+              <div className="w-7 h-7 rounded-full flex-shrink-0 flex items-center justify-center mr-3 mt-0.5 bg-white/20 group-hover:bg-white/30">
+                <ShieldCheck size={14} className="text-white" />
+              </div>
+              <span className="text-white text-sm">End-to-end encryption</span>
+            </div>
+            
+            <div className="flex items-start group">
+              <div className="w-7 h-7 rounded-full flex-shrink-0 flex items-center justify-center mr-3 mt-0.5 bg-white/20 group-hover:bg-white/30">
+                <ShieldCheck size={14} className="text-white" />
+              </div>
+              <span className="text-white text-sm">HIPAA-compliant</span>
+            </div>
+            
+            <div className="flex items-start group">
+              <div className="w-7 h-7 rounded-full flex-shrink-0 flex items-center justify-center mr-3 mt-0.5 bg-white/20 group-hover:bg-white/30">
+                <ShieldCheck size={14} className="text-white" />
+              </div>
+              <span className="text-white text-sm">On-device processing</span>
+            </div>
+          </div>
+        </div>
+      </BentoBox>
+      
+      {/* Performance Metrics - Row of 3 */}
+      {METRICS.map((metric, index) => (
+        <BentoBox key={metric.label} className="col-span-4" delay={index + 2}>
+          <MetricCard value={metric.value} label={metric.label} color={metric.color} />
+        </BentoBox>
+      ))}
+      
+      {/* Nigeria-Specific Data */}
+      <BentoBox className="col-span-6" delay={5}>
+        <div className="h-full flex flex-col p-6 md:p-7 relative overflow-hidden">
+          <div className="flex items-center mb-4">
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-r from-green-600 to-green-500 flex items-center justify-center mr-4 shadow-md">
+              <Globe size={20} className="text-white" />
+            </div>
+            <h3 className="text-lg md:text-xl font-bold text-slate-800">Nigeria-Specific Data</h3>
+          </div>
+          
+          <div className="space-y-3 mt-2">
+            <CheckItem text="Local medical terminology" />
+            <CheckItem text="Regional healthcare practices" />
+          </div>
+        </div>
+      </BentoBox>
+      
+      {/* Offline Capability */}
+      <BentoBox className="col-span-6" delay={6}>
+        <div className="h-full flex flex-col p-6 md:p-7 relative overflow-hidden">
+          <div className="flex items-center mb-4">
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-r from-blue-600 to-blue-500 flex items-center justify-center mr-4 shadow-md">
+              <Wifi size={20} className="text-white" />
+            </div>
+            <h3 className="text-lg md:text-xl font-bold text-slate-800">Offline Capable</h3>
+          </div>
+          
+          <div className="space-y-3 mt-2">
+            <CheckItem text="Works without internet" />
+            <CheckItem text="Perfect for limited connectivity" />
+          </div>
+        </div>
+      </BentoBox>
+    </div>
+  ), []);
+  
+  // Memoized mobile renderer
+  const renderMobile = useCallback(() => (
+    <div className="px-1">
+      {/* Interactive 3D Stack for metrics */}
+      <MobileMetricStack />
+      
+      {/* Expandable Feature Cards */}
+      <div className="mb-8">
+        {FEATURES.map((feature, index) => (
+          <MobileFeatureCard
+            key={index}
+            feature={feature}
+            index={index}
+            expanded={expandedCard}
+            toggleExpand={toggleExpand}
+          />
+        ))}
+      </div>
+    </div>
+  ), [expandedCard, toggleExpand]);
+  
   return (
     <section 
-      ref={sectionRef} 
       id="ai"
-      className="py-20 md:py-28 bg-gradient-to-b from-slate-50 to-white relative overflow-hidden"
-      aria-labelledby="ai-technology-title"
+      className="py-14 md:py-20 bg-gradient-to-b from-slate-50 to-white relative overflow-hidden"
     >
-      {/* Enhanced background elements with animated blobs */}
+      {/* Only render SVG patterns once */}
+      <SvgPatterns />
+      
+      {/* Optimized background elements */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         <div className="absolute inset-0 opacity-60 bg-[radial-gradient(ellipse_at_top_right,rgba(22,163,74,0.15),transparent_50%),radial-gradient(ellipse_at_bottom_left,rgba(37,99,235,0.1),transparent_50%)]"></div>
         <div className="absolute top-1/3 -right-40 w-96 h-96 bg-primary-50 rounded-full mix-blend-multiply blur-3xl opacity-70 animate-blob"></div>
         <div className="absolute -bottom-20 -left-20 w-80 h-80 bg-secondary-50 rounded-full mix-blend-multiply blur-3xl opacity-70 animate-blob animation-delay-2000"></div>
-        <div className="absolute top-2/3 left-1/3 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-slate-100 rounded-full mix-blend-multiply blur-3xl opacity-50 animate-blob animation-delay-4000"></div>
       </div>
       
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 xl:max-w-7xl relative z-10">
-        <motion.div 
-          className="text-center mb-16"
-          initial={{ opacity: 0, y: 20 }}
-          animate={isVisible ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.6, ease: "easeOut" }}
-        >
+        <div className="text-center mb-10 md:mb-14">
           <div className="mb-4">
-            <Badge color="primary">
+            <motion.span 
+              className="inline-flex px-5 py-2 rounded-full text-sm font-medium bg-primary-50 text-primary-700 border-primary-100 shadow-sm border"
+              initial={{ opacity: 0, y: -10 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5 }}
+            >
               <span className="flex items-center gap-2">
-                <Sparkles size={15} className="text-primary-500" />
-                Powered by Advanced AI
+                <Zap size={15} className="text-primary-500" />
+                AI-Powered Healthcare
               </span>
-            </Badge>
+            </motion.span>
           </div>
           
           <SectionTitle 
             id="ai-technology-title"
             title="AI Technology" 
-            subtitle="Our custom DeepSeek LLM model delivers intelligent healthcare insights optimized for Nigeria's unique environment"
+            subtitle={isMobile ? "Our DeepSeek LLM model for Nigerian healthcare" : "Our custom DeepSeek LLM model delivers intelligent healthcare insights optimized for Nigeria's unique environment"}
           />
-        </motion.div>
-        
-        {/* Improved Bento Grid Layout */}
-        <div className="grid grid-cols-12 gap-4 md:gap-6">
-          {/* Main Feature: DeepSeek LLM */}
-          <BentoBox className="col-span-12 lg:col-span-6" delay={0}>
-            <div className="h-full flex flex-col md:flex-row">
-              <div className="bg-gradient-to-br from-primary-700 to-primary-900 text-white p-6 md:p-8 md:w-2/5 flex flex-col justify-center relative overflow-hidden">
-                {/* Animated pattern overlay */}
-                <div className="absolute inset-0 opacity-10">
-                  <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
-                    <defs>
-                      <pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse">
-                        <path d="M 10 0 L 0 0 0 10" fill="none" stroke="white" strokeWidth="0.5" opacity="0.5" />
-                      </pattern>
-                    </defs>
-                    <rect width="100" height="100" fill="url(#grid)" />
-                  </svg>
-                </div>
-                
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.6, delay: 0.1 }}
-                >
-                  <div className="relative">
-                    <Brain size={40} className="mb-5 text-primary-200" />
-                    <h3 className="text-xl md:text-2xl font-bold mb-3">DeepSeek LLM Model</h3>
-                    <p className="text-primary-100 text-sm md:text-base">
-                      State-of-the-art AI specifically fine-tuned for Nigerian healthcare
-                    </p>
-                  </div>
-                </motion.div>
-              </div>
-              
-              <div className="p-6 md:p-8 md:w-3/5 bg-white">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-6 h-full">
-                  <motion.div 
-                    className="flex items-center"
-                    initial={{ opacity: 0, x: -10 }}
-                    whileInView={{ opacity: 1, x: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.4, delay: 0.2 }}
-                  >
-                    <div className="w-10 h-10 rounded-xl bg-primary-100 flex items-center justify-center mr-3 shadow-sm">
-                      <Database size={18} className="text-primary-700" />
-                    </div>
-                    <span className="font-medium text-sm md:text-base text-slate-800">7B Parameters</span>
-                  </motion.div>
-                  
-                  <motion.div 
-                    className="flex items-center"
-                    initial={{ opacity: 0, x: -10 }}
-                    whileInView={{ opacity: 1, x: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.4, delay: 0.3 }}
-                  >
-                    <div className="w-10 h-10 rounded-xl bg-primary-100 flex items-center justify-center mr-3 shadow-sm">
-                      <Cpu size={18} className="text-primary-700" />
-                    </div>
-                    <span className="font-medium text-sm md:text-base text-slate-800">Mobile Optimized</span>
-                  </motion.div>
-                  
-                  <motion.div 
-                    className="flex items-center"
-                    initial={{ opacity: 0, x: -10 }}
-                    whileInView={{ opacity: 1, x: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.4, delay: 0.4 }}
-                  >
-                    <div className="w-10 h-10 rounded-xl bg-primary-100 flex items-center justify-center mr-3 shadow-sm">
-                      <ShieldCheck size={18} className="text-primary-700" />
-                    </div>
-                    <span className="font-medium text-sm md:text-base text-slate-800">Privacy-Focused</span>
-                  </motion.div>
-                  
-                  <motion.div 
-                    className="flex items-center"
-                    initial={{ opacity: 0, x: -10 }}
-                    whileInView={{ opacity: 1, x: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.4, delay: 0.5 }}
-                  >
-                    <div className="w-10 h-10 rounded-xl bg-primary-100 flex items-center justify-center mr-3 shadow-sm">
-                      <Zap size={18} className="text-primary-700" />
-                    </div>
-                    <span className="font-medium text-sm md:text-base text-slate-800">Low Latency</span>
-                  </motion.div>
-                </div>
-              </div>
-            </div>
-          </BentoBox>
-          
-          {/* Data Security */}
-          <BentoBox className="col-span-12 lg:col-span-6" delay={1}>
-            <div className="h-full bg-gradient-to-br from-secondary-700 to-primary-800 text-white p-6 md:p-8 flex flex-col justify-between relative overflow-hidden">
-              {/* Animated security pattern */}
-              <div className="absolute inset-0 opacity-10">
-                <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
-                  <defs>
-                    <pattern id="security-grid" width="20" height="20" patternUnits="userSpaceOnUse">
-                      <circle cx="10" cy="10" r="1.5" fill="white" opacity="0.5" />
-                    </pattern>
-                  </defs>
-                  <rect width="100" height="100" fill="url(#security-grid)" />
-                </svg>
-              </div>
-              
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6, delay: 0.2 }}
-              >
-                <div className="relative">
-                  <Lock size={36} className="mb-5 text-secondary-200" />
-                  <h3 className="text-xl md:text-2xl font-bold mb-3">Data Security</h3>
-                  <p className="text-secondary-100 text-sm md:text-base mb-6">
-                    Enterprise-grade protection for all healthcare data with robust security measures
-                  </p>
-                </div>
-              </motion.div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.4, delay: 0.3 }}
-                >
-                  <FeatureItem 
-                    icon={ShieldCheck} 
-                    text="On-device processing" 
-                    dark={true}
-                  />
-                </motion.div>
-                
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.4, delay: 0.4 }}
-                >
-                  <FeatureItem 
-                    icon={ShieldCheck} 
-                    text="HIPAA-compliant" 
-                    dark={true}
-                  />
-                </motion.div>
-                
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.4, delay: 0.5 }}
-                >
-                  <FeatureItem 
-                    icon={ShieldCheck} 
-                    text="End-to-end encryption" 
-                    dark={true}
-                  />
-                </motion.div>
-              </div>
-            </div>
-          </BentoBox>
-          
-          {/* Nigeria-Specific Data */}
-          <BentoBox className="col-span-12 md:col-span-6 lg:col-span-4" delay={2}>
-            <div className="h-full flex flex-col p-6 md:p-7 relative overflow-hidden">
-              {/* Subtle background pattern */}
-              <div className="absolute inset-0 opacity-5">
-                <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
-                  <defs>
-                    <pattern id="nigeria-pattern" patternUnits="userSpaceOnUse" width="40" height="40" patternTransform="rotate(45)">
-                      <rect width="100%" height="100%" fill="none"/>
-                      <path d="M0 20 L40 20" stroke="#16a34a" strokeWidth="1" strokeDasharray="1,3"/>
-                    </pattern>
-                  </defs>
-                  <rect width="100%" height="100%" fill="url(#nigeria-pattern)"/>
-                </svg>
-              </div>
-            
-              <motion.div 
-                className="flex items-center mb-5"
-                initial={{ opacity: 0, x: -20 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: 0.1 }}
-              >
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-r from-green-600 to-green-500 flex items-center justify-center mr-4 shadow-md">
-                  <Globe size={20} className="text-white" />
-                </div>
-                <h3 className="text-lg md:text-xl font-bold text-slate-800">Nigeria-Specific Data</h3>
-              </motion.div>
-              
-              <div className="space-y-4 mt-3 flex-grow">
-                {[
-                  "Trained on unique Nigerian healthcare data",
-                  "Not generic internet-scraped data",
-                  "Understands local medical terminology",
-                  "Tailored to regional healthcare practices"
-                ].map((text, i) => (
-                  <motion.div
-                    key={i}
-                    initial={{ opacity: 0, y: 10 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.4, delay: 0.2 + (i * 0.1) }}
-                  >
-                    <FeatureItem 
-                      icon={CheckCircle2} 
-                      text={text} 
-                    />
-                  </motion.div>
-                ))}
-              </div>
-            </div>
-          </BentoBox>
-          
-          {/* Offline Capability */}
-          <BentoBox className="col-span-12 md:col-span-6 lg:col-span-4" delay={3}>
-            <div className="h-full flex flex-col p-6 md:p-7 relative overflow-hidden">
-              {/* Subtle wifi pattern background */}
-              <div className="absolute inset-0 opacity-5">
-                <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
-                  <defs>
-                    <pattern id="wifi-pattern" patternUnits="userSpaceOnUse" width="60" height="60">
-                      <path d="M0 30 A 30 30 0 0 1 60 30" fill="none" stroke="#2563eb" strokeWidth="1" strokeDasharray="2,4"/>
-                      <path d="M15 30 A 15 15 0 0 1 45 30" fill="none" stroke="#2563eb" strokeWidth="1" strokeDasharray="2,4"/>
-                    </pattern>
-                  </defs>
-                  <rect width="100%" height="100%" fill="url(#wifi-pattern)"/>
-                </svg>
-              </div>
-            
-              <motion.div 
-                className="flex items-center mb-5"
-                initial={{ opacity: 0, x: -20 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: 0.1 }}
-              >
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-r from-secondary-600 to-purple-600 flex items-center justify-center mr-4 shadow-md">
-                  <Wifi size={20} className="text-white" />
-                </div>
-                <h3 className="text-lg md:text-xl font-bold text-slate-800">Offline Capable</h3>
-              </motion.div>
-              
-              <div className="space-y-4 mt-3 flex-grow">
-                {[
-                  "Works without internet connection",
-                  "Runs locally on PC or smartphone",
-                  "Perfect for areas with limited connectivity",
-                  "No disruption during network outages"
-                ].map((text, i) => (
-                  <motion.div
-                    key={i}
-                    initial={{ opacity: 0, y: 10 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.4, delay: 0.2 + (i * 0.1) }}
-                  >
-                    <FeatureItem 
-                      icon={CheckCircle2} 
-                      text={text} 
-                    />
-                  </motion.div>
-                ))}
-              </div>
-            </div>
-          </BentoBox>
-          
-          {/* Performance */}
-          <BentoBox className="col-span-12 md:col-span-6 lg:col-span-4" delay={4}>
-            <div className="h-full flex flex-col p-6 md:p-7 relative overflow-hidden">
-              {/* Subtle zap pattern background */}
-              <div className="absolute inset-0 opacity-5">
-                <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
-                  <defs>
-                    <pattern id="performance-pattern" patternUnits="userSpaceOnUse" width="40" height="40">
-                      <path d="M20 0 L25 20 L40 25 L25 30 L20 50 L15 30 L0 25 L15 20 Z" fill="none" stroke="#16a34a" strokeWidth="0.5"/>
-                    </pattern>
-                  </defs>
-                  <rect width="100%" height="100%" fill="url(#performance-pattern)"/>
-                </svg>
-              </div>
-            
-              <motion.div 
-                className="flex items-center mb-5"
-                initial={{ opacity: 0, x: -20 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: 0.1 }}
-              >
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 flex items-center justify-center mr-4 shadow-md">
-                  <Zap size={20} className="text-white" />
-                </div>
-                <h3 className="text-lg md:text-xl font-bold text-slate-800">High Performance</h3>
-              </motion.div>
-              
-              <div className="space-y-4 mt-3 flex-grow">
-                {[
-                  "Optimized for low-resource environments",
-                  "Quick response times even on older devices",
-                  "Minimal battery consumption",
-                  "Efficient memory usage"
-                ].map((text, i) => (
-                  <motion.div
-                    key={i}
-                    initial={{ opacity: 0, y: 10 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.4, delay: 0.2 + (i * 0.1) }}
-                  >
-                    <FeatureItem 
-                      icon={CheckCircle2} 
-                      text={text} 
-                    />
-                  </motion.div>
-                ))}
-              </div>
-            </div>
-          </BentoBox>
-          
-          {/* Performance Metrics - Full width box */}
-          <BentoBox className="col-span-12" delay={5} hover={false}>
-            <div className="flex flex-col md:flex-row items-center p-6 md:p-8 bg-gradient-to-br from-slate-50 to-white">
-              <div className="md:w-1/3 mb-8 md:mb-0 md:pr-8">
-                <motion.div
-                  initial={{ opacity: 0, x: -20 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.5 }}
-                >
-                  <h3 className="text-xl md:text-2xl font-bold text-slate-800 mb-3">Performance Metrics</h3>
-                  <p className="text-slate-600 text-sm md:text-base">
-                    Our AI outperforms traditional systems across all key metrics, delivering measurable benefits for healthcare providers
-                  </p>
-                </motion.div>
-              </div>
-              
-              <div className="md:w-2/3 grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
-                <MetricBox value="97%" label="Accuracy" color="primary" />
-                <MetricBox value="85%" label="Time Savings" color="secondary" />
-                <MetricBox value="43%" label="Cost Reduction" color="purple" />
-              </div>
-            </div>
-          </BentoBox>
         </div>
+        
+        {isMobile ? renderMobile() : renderDesktop()}
       </div>
-      
-      {/* Add CSS animations */}
+
+
       <style jsx>{`
-        @keyframes blob {
-          0% {
-            transform: translate(0px, 0px) scale(1);
-          }
-          33% {
-            transform: translate(30px, -50px) scale(1.1);
-          }
-          66% {
-            transform: translate(-20px, 20px) scale(0.9);
-          }
-          100% {
-            transform: translate(0px, 0px) scale(1);
-          }
+       
+      @keyframes blob {
+        0% {
+           transform: translate(0px, 0px) scale(1);
         }
-        
+        33% {
+           transform: translate(30px, -50px) scale(1.1);
+        }
+        66% {
+           transform: translate(-20px, 20px) scale(0.9);
+        }
+        100% {
+           transform: translate(0px, 0px) scale(1);
+        }
+      }
+
+      .animate-blob {
+        animation: blob 30s infinite alternate;
+      }
+
+      .animation-delay-2000 {
+        animation-delay: 2s;
+      }
+
+      .animation-delay-4000 {
+        animation-delay: 4s;
+      }
+
+      .bento-box {
+        opacity: 0;
+        transform: translateY(20px);
+        transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+      }
+
+      @media (prefers-reduced-motion: reduce) {
         .animate-blob {
-          animation: blob 30s infinite alternate;
-        }
-        
-        .animation-delay-2000 {
-          animation-delay: 2s;
-        }
-        
-        .animation-delay-4000 {
-          animation-delay: 4s;
-        }
+        animation: none;
+      }
+  
+      .bento-box {
+        transition: none;
+      }
+    }   
       `}</style>
     </section>
+
+    
   );
 };
 
 export default AiTechnology;
+      
