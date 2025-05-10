@@ -300,7 +300,7 @@ const Products = () => {
     <section
       ref={sectionRef}
       id="product"
-      className="py-20 sm:py-28 bg-gradient-to-b from-white to-slate-50 relative overflow-hidden"
+      className="py-20 md:py-28 bg-gradient-to-b from-white to-slate-50 relative overflow-hidden"
       aria-labelledby="products-section-title"
     >
       {/* Enhanced background elements with animated gradients */}

@@ -44,7 +44,7 @@ const CallToAction = () => {
   return (
     <section
       ref={sectionRef}
-      className="py-20 bg-gradient-to-br from-slate-900 to-primary-900 relative overflow-hidden"
+      className="py-20 py:md-28 bg-gradient-to-br from-slate-900 to-primary-900 relative overflow-hidden"
     >
       {/* Subtle background blob */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">

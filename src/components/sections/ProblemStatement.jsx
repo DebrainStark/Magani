@@ -351,7 +351,7 @@ const ProblemStatement = () => {
     <section 
       ref={sectionRef}
       id="problem"
-      className="py-16 bg-gradient-to-b from-white via-slate-50 to-slate-100 relative overflow-hidden"
+      className="py-20 py:md-28 bg-gradient-to-b from-white via-slate-50 to-slate-100 relative overflow-hidden"
       aria-labelledby="healthcare-problem-title"
     >
       {/* Improved background elements with subtle animation */}
@@ -371,8 +371,8 @@ const ProblemStatement = () => {
           }`}
         >
           {/* Enhanced responsive alert badge with improved animation */}
-          <div className="inline-flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-1 sm:py-2 bg-red-50 rounded-full text-red-600 text-sm sm:text-base font-semibold border border-red-200 mb-4 sm:mb-6 shadow-md hover:shadow-lg transition-shadow duration-300">
-            <div className="flex items-center justify-center w-6 h-6 sm:w-8 sm:h-8 bg-red-100 rounded-full relative">
+          <div className="mt-4 sm:mt-4 inline-flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-1 sm:py-2 bg-red-50 rounded-full text-red-600 text-sm sm:text-base font-semibold border border-red-200 mb-4 sm:mb-6 shadow-md hover:shadow-lg transition-shadow duration-300">
+            <div className="flex items-center justify-center w-4 h-4 sm:w-5 sm:h-5 bg-red-100 rounded-full relative">
               <AlertTriangle size={16} className="text-red-500" aria-hidden="true" />
               <span 
                 className="absolute inset-0 rounded-full bg-red-400 opacity-30 animate-ping"

@@ -49,7 +49,7 @@ const Hero = () => {
         "Keep expenses within capitation limits and prevent claim denials with instant eligibility verification.",
       stat: "99% Verification Accuracy",
       icon: <CheckCircle size={20} />,
-      color: "secondary",
+      color: "primary",
       centerValue: "99%",
     },
     patients: {
@@ -58,7 +58,7 @@ const Hero = () => {
         "Eliminate long wait times and unexpected out-of-pocket payments with real-time coverage verification.",
       stat: "Hours → Seconds",
       icon: <Clock size={20} />,
-      color: "amber", // We'll handle this special case
+      color: "primary",
       centerValue: "24/7",
     },
   };
