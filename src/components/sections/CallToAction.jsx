@@ -5,6 +5,7 @@ import { ArrowRight } from "lucide-react";
 /**
  * Custom hook for intersection observer
  */
+
 const useIntersectionObserver = (options = {}) => {
   const [isIntersecting, setIsIntersecting] = useState(false);
   const ref = useRef(null);
@@ -36,6 +37,7 @@ const useIntersectionObserver = (options = {}) => {
  * Main CallToAction component
  */
 const CallToAction = () => {
+
   const [sectionRef, isVisible] = useIntersectionObserver({
     threshold: 0.1,
     unobserveOnIntersect: true,

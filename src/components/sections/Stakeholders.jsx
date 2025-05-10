@@ -248,7 +248,7 @@ const Stakeholders = () => {
   };
 
   return (
-    <section id="stakeholder" className="py-20 md:py-28 px-6 bg-gradient-to-br from-gray-50 to-slate-100 relative overflow-hidden">
+    <section id="stakeholder" className="py-20 md:py-28 bg-gradient-to-br from-gray-50 to-slate-100 relative overflow-hidden">
       {/* Enhanced decorative elements with animation */}
       <div className="absolute inset-0 pointer-events-none">
         <motion.div

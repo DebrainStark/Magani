@@ -605,5 +605,4 @@ const AiTechnology = () => {
   );
 };
 
-export default AiTechnology;
-      
+export default AiTechnology;      
