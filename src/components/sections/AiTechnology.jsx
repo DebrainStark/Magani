@@ -1,275 +1,9 @@
-import React, { useState, useEffect, useRef, useCallback, memo } from 'react';
+import React, { useState, useEffect, useRef, useCallback, memo, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Brain, Zap, Database, Wifi, Globe, ShieldCheck, Cpu, CheckCircle2, X, Plus, ArrowDown } from 'lucide-react';
 import SectionTitle from '../common/SectionTitle';
 
-
-// Optimized useMediaQuery hook
-const useMediaQuery = (query) => {
-  const [matches, setMatches] = useState(false);
-
-  useEffect(() => {
-    const media = window.matchMedia(query);
-    setMatches(media.matches); // Set initial value immediately
-    
-    const listener = () => setMatches(media.matches);
-    media.addEventListener('change', listener);
-    return () => media.removeEventListener('change', listener);
-  }, [query]); // Only depend on query
-
-  return matches;
-};
-
-// Shared IntersectionObserver hook
-const useIntersectionObserver = () => {
-  const observerRef = useRef(null);
-  
-  if (!observerRef.current && typeof window !== 'undefined') {
-    observerRef.current = new IntersectionObserver(
-      (entries) => {
-        entries.forEach(entry => {
-          if (entry.isIntersecting) {
-            const element = entry.target;
-            const delay = element.dataset.delay || 0;
-            element.style.opacity = 1;
-            element.style.transform = 'translateY(0)';
-            observerRef.current.unobserve(element);
-          }
-        });
-      },
-      { threshold: 0.1 }
-    );
-  }
-  
-  return observerRef.current;
-};
-
-// SVG Patterns Component
-const SvgPatterns = memo(() => (
-  <svg style={{ position: 'absolute', width: 0, height: 0 }}>
-    <defs>
-      <pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse">
-        <path d="M 10 0 L 0 0 0 10" fill="none" stroke="white" strokeWidth="0.5" opacity="0.5" />
-      </pattern>
-      <pattern id="security-grid" width="20" height="20" patternUnits="userSpaceOnUse">
-        <circle cx="10" cy="10" r="1.5" fill="white" opacity="0.5" />
-      </pattern>
-    </defs>
-  </svg>
-));
-
-// Feature icon component
-const FeatureIcon = memo(({ icon: IconComponent, size, className }) => (
-  <IconComponent size={size || 20} className={className} />
-));
-
-// CheckItem component for feature lists
-const CheckItem = memo(({ text, bgColor = "primary" }) => (
-  <div className="flex items-start">
-    <div className={`w-7 h-7 rounded-full flex-shrink-0 flex items-center justify-center mr-3 mt-0.5 bg-${bgColor}-100`}>
-      <CheckCircle2 size={14} className={`text-${bgColor}-700`} />
-    </div>
-    <span className="text-slate-700 text-sm">{text}</span>
-  </div>
-));
-
-// Desktop Bento Box Component - optimized
-const BentoBox = memo(({ className, children, delay = 0 }) => {
-  const ref = useRef(null);
-  const observer = useIntersectionObserver();
-  
-  useEffect(() => {
-    if (ref.current && observer) {
-      ref.current.dataset.delay = delay;
-      observer.observe(ref.current);
-    }
-    
-    return () => {
-      if (ref.current && observer) {
-        observer.unobserve(ref.current);
-      }
-    };
-  }, [delay, observer]);
-  
-  return (
-    <div
-      ref={ref}
-      className={`bento-box bg-white rounded-2xl shadow-lg overflow-hidden opacity-0 transform translate-y-5 transition-all duration-500 ${className}`}
-      style={{ transitionDelay: `${delay * 100}ms` }}
-    >
-      {children}
-    </div>
-  );
-});
-
-// MetricCard component for reuse
-const MetricCard = memo(({ value, label, color }) => (
-  <div className="text-center p-5 rounded-xl bg-white relative">
-    <div className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-${color}-500 to-${color}-600`}></div>
-    <div className="text-3xl md:text-4xl font-bold text-slate-800 mb-1">{value}</div>
-    <div className="text-slate-600 font-medium text-sm">{label}</div>
-  </div>
-));
-
-// Mobile Feature Card Component - optimized with memo
-const MobileFeatureCard = memo(({ feature, index, expanded, toggleExpand }) => {
-  const IconComponent = feature.icon;
-  const isExpanded = expanded === index;
-  
-  return (
-    <motion.div 
-      className={`rounded-2xl overflow-hidden mb-4 shadow-lg relative ${
-        isExpanded ? "bg-white" : `bg-gradient-to-br ${feature.color}`
-      }`}
-      layoutId={`card-container-${index}`}
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0, transition: { delay: index * 0.1 } }}
-      whileTap={{ scale: 0.98 }}
-    >
-      {/* Header always visible */}
-      <motion.div 
-        className={`p-4 flex items-center justify-between ${
-          isExpanded ? "border-b border-slate-100" : ""
-        }`}
-        layoutId={`card-header-${index}`}
-        onClick={() => toggleExpand(index)}
-      >
-        <div className="flex items-center">
-          <motion.div
-            layoutId={`card-icon-${index}`}
-            className={`w-10 h-10 rounded-full flex items-center justify-center mr-3 ${
-              isExpanded ? `bg-${feature.bgColor}-100` : "bg-white/20"
-            }`}
-          >
-            <IconComponent size={20} className={isExpanded ? `text-${feature.bgColor}-600` : "text-white"} />
-          </motion.div>
-          <motion.div
-            layoutId={`card-title-${index}`}
-            className={isExpanded ? "text-slate-800 font-bold" : "text-white font-bold"}
-          >
-            {feature.title}
-          </motion.div>
-        </div>
-        
-        <motion.div
-          className={`rounded-full w-7 h-7 flex items-center justify-center ${
-            isExpanded ? "bg-slate-100 text-slate-500" : "bg-white/20 text-white"
-          }`}
-          whileTap={{ scale: 0.9 }}
-        >
-          {isExpanded ? <X size={14} /> : <Plus size={14} />}
-        </motion.div>
-      </motion.div>
-      
-      {/* Expandable content */}
-      <AnimatePresence>
-        {isExpanded && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ type: "spring", duration: 0.4 }}
-            className="overflow-hidden"
-          >
-            <div className="p-4 pt-2">
-              <p className="text-slate-600 text-sm mb-4">
-                {feature.description}
-              </p>
-              
-              <div className="grid grid-cols-1 gap-3">
-                {feature.features.map((item, i) => (
-                  <div key={i} className="flex items-center">
-                    <div className={`w-6 h-6 rounded-full bg-${feature.bgColor}-50 flex items-center justify-center mr-3`}>
-                      <CheckCircle2 size={14} className={`text-${feature.bgColor}-500`} />
-                    </div>
-                    <span className="text-slate-700 text-sm">{item}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </motion.div>
-  );
-});
-
-// Mobile Metrics Stack - optimized
-const MobileMetricStack = memo(() => {
-  const [activeIndex, setActiveIndex] = useState(0);
-  const metrics = [
-    { value: "97%", label: "Accuracy", color: "primary" },
-    { value: "85%", label: "Time Savings", color: "secondary" },
-    { value: "43%", label: "Cost Reduction", color: "purple" }
-  ];
-  
-  const cycleMetric = useCallback(() => {
-    setActiveIndex((prev) => (prev + 1) % metrics.length);
-  }, [metrics.length]);
-  
-  return (
-    <div className="relative h-40 mb-8">
-      {metrics.map((metric, index) => {
-        const isActive = index === activeIndex;
-        const isNext = (index === (activeIndex + 1) % metrics.length);
-        const isAfterNext = (index === (activeIndex + 2) % metrics.length);
-        
-        let position = {};
-        let zIndex = 0;
-        
-        if (isActive) {
-          position = { top: "0%", left: "0%", right: "0%" };
-          zIndex = 30;
-        } else if (isNext) {
-          position = { top: "10%", left: "5%", right: "5%" };
-          zIndex = 20;
-        } else if (isAfterNext) {
-          position = { top: "20%", left: "10%", right: "10%" };
-          zIndex = 10;
-        }
-        
-        return (
-          <motion.div
-            key={index}
-            className="absolute text-center p-5 pt-4 rounded-xl bg-white border border-slate-200 shadow-lg"
-            style={{ 
-              ...position, 
-              zIndex,
-              opacity: isAfterNext ? 0.5 : 1,
-              pointerEvents: isActive ? "auto" : "none"
-            }}
-            initial={false}
-            animate={{ 
-              top: position.top, 
-              left: position.left, 
-              right: position.right,
-              opacity: isAfterNext ? 0.5 : 1
-            }}
-            transition={{ type: "spring", stiffness: 300, damping: 20 }}
-            onClick={cycleMetric}
-          >
-            <div className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-${metric.color}-500 to-${metric.color}-600`}></div>
-            <div className="text-3xl font-bold text-slate-800 mb-1">{metric.value}</div>
-            <div className="text-slate-600 font-medium text-sm">{metric.label}</div>
-            
-            {isActive && (
-              <motion.div 
-                className="absolute -bottom-3 left-1/2 transform -translate-x-1/2 w-8 h-8 bg-white rounded-full shadow-md flex items-center justify-center text-slate-400"
-                initial={{ y: 0 }}
-                animate={{ y: [0, 5, 0] }}
-                transition={{ repeat: Infinity, duration: 1.5 }}
-              >
-                <ArrowDown size={16} />
-              </motion.div>
-            )}
-          </motion.div>
-        );
-      })}
-    </div>
-  );
-});
-
-// Feature data - moved outside component to avoid recreating on each render
+// Constants moved outside to avoid recreation
 const FEATURES = [
   {
     icon: Brain,
@@ -329,26 +63,345 @@ const FEATURES = [
   }
 ];
 
-// Metrics data - constants to avoid recreation
 const METRICS = [
   { value: "97%", label: "Accuracy", color: "primary" },
   { value: "85%", label: "Time Savings", color: "secondary" },
   { value: "43%", label: "Cost Reduction", color: "purple" }
 ];
 
-// Main AI Technology Component - optimized
+// Optimized useMediaQuery hook with default value
+const useMediaQuery = (query) => {
+  // Set initial state based on browser capabilities - prevents hydration mismatch
+  const getMatches = () => {
+    // Return false in SSR / node environment
+    if (typeof window !== 'undefined') {
+      return window.matchMedia(query).matches;
+    }
+    return false;
+  };
+
+  const [matches, setMatches] = useState(getMatches);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    
+    const media = window.matchMedia(query);
+    // Handle immediate change
+    if (matches !== media.matches) {
+      setMatches(media.matches);
+    }
+    
+    const handleChange = () => setMatches(media.matches);
+    
+    // Modern approach that works with newer browsers
+    media.addEventListener('change', handleChange);
+    return () => media.removeEventListener('change', handleChange);
+  }, [query, matches]);
+
+  return matches;
+};
+
+// Improved intersection observer hook with cleanup
+const useIntersectionObserver = (options = { threshold: 0.1 }) => {
+  const observerRef = useRef(null);
+  const observedElementsRef = useRef(new Set());
+  
+  useEffect(() => {
+    observerRef.current = new IntersectionObserver(
+      (entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            const element = entry.target;
+            const delay = element.dataset.delay || 0;
+            element.style.opacity = 1;
+            element.style.transform = 'translateY(0)';
+            if (observerRef.current) {
+              observerRef.current.unobserve(element);
+              observedElementsRef.current.delete(element);
+            }
+          }
+        });
+      },
+      options
+    );
+    
+    // Cleanup function
+    return () => {
+      if (observerRef.current) {
+        observedElementsRef.current.forEach(element => {
+          observerRef.current.unobserve(element);
+        });
+        observerRef.current.disconnect();
+      }
+    };
+  }, [options.threshold]); // Only recreate if threshold changes
+  
+  const observe = useCallback((element) => {
+    if (element && observerRef.current) {
+      observerRef.current.observe(element);
+      observedElementsRef.current.add(element);
+    }
+  }, []);
+  
+  return observe;
+};
+
+// SVG Patterns Component - using CSS-in-JS to prevent style tag issues
+const SvgPatterns = memo(() => (
+  <svg style={{ position: 'absolute', width: 0, height: 0 }}>
+    <defs>
+      <pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse">
+        <path d="M 10 0 L 0 0 0 10" fill="none" stroke="white" strokeWidth="0.5" opacity="0.5" />
+      </pattern>
+      <pattern id="security-grid" width="20" height="20" patternUnits="userSpaceOnUse">
+        <circle cx="10" cy="10" r="1.5" fill="white" opacity="0.5" />
+      </pattern>
+    </defs>
+  </svg>
+));
+
+// Simplified feature icon component
+const FeatureIcon = memo(({ icon: Icon, size = 20, className }) => (
+  <Icon size={size} className={className} />
+));
+
+// Optimized CheckItem with classname mapping
+const CheckItem = memo(({ text, bgColor = "primary" }) => {
+  const bgClasses = {
+    primary: "bg-primary-100",
+    secondary: "bg-secondary-100",
+    green: "bg-green-100",
+    blue: "bg-blue-100",
+    purple: "bg-purple-100"
+  };
+  
+  const textClasses = {
+    primary: "text-primary-700",
+    secondary: "text-secondary-700",
+    green: "text-green-700",
+    blue: "text-blue-700",
+    purple: "text-purple-700"
+  };
+  
+  return (
+    <div className="flex items-start">
+      <div className={`w-7 h-7 rounded-full flex-shrink-0 flex items-center justify-center mr-3 mt-0.5 ${bgClasses[bgColor] || bgClasses.primary}`}>
+        <CheckCircle2 size={14} className={textClasses[bgColor] || textClasses.primary} />
+      </div>
+      <span className="text-slate-700 text-sm">{text}</span>
+    </div>
+  );
+});
+
+// Improved BentoBox component
+const BentoBox = memo(({ className, children, delay = 0 }) => {
+  const boxRef = useRef(null);
+  const observe = useIntersectionObserver();
+  
+  useEffect(() => {
+    if (boxRef.current) {
+      boxRef.current.dataset.delay = delay;
+      observe(boxRef.current);
+    }
+  }, [delay, observe]);
+  
+  return (
+    <div
+      ref={boxRef}
+      className={`bento-box bg-white rounded-2xl shadow-lg overflow-hidden opacity-0 transform translate-y-5 transition-all duration-500 ${className}`}
+      style={{ transitionDelay: `${delay * 100}ms` }}
+    >
+      {children}
+    </div>
+  );
+});
+
+// Optimized MetricCard component
+const MetricCard = memo(({ value, label, color }) => {
+  const gradientClasses = {
+    primary: "from-primary-500 to-primary-600",
+    secondary: "from-secondary-500 to-secondary-600",
+    purple: "from-purple-500 to-purple-600",
+    green: "from-green-500 to-green-600",
+    blue: "from-blue-500 to-blue-600"
+  };
+  
+  return (
+    <div className="text-center p-5 rounded-xl bg-white relative">
+      <div className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r ${gradientClasses[color] || gradientClasses.primary}`}></div>
+      <div className="text-3xl md:text-4xl font-bold text-slate-800 mb-1">{value}</div>
+      <div className="text-slate-600 font-medium text-sm">{label}</div>
+    </div>
+  );
+});
+
+// Enhanced MobileFeatureCard with precalculated classes
+const MobileFeatureCard = memo(({ feature, index, expanded, toggleExpand }) => {
+  const IconComponent = feature.icon;
+  const isExpanded = expanded === index;
+  
+  // Precalculate color classes
+  const colorClasses = useMemo(() => {
+    const bgColorClass = `bg-${feature.bgColor}`;
+    return {
+      iconBg: isExpanded ? `${bgColorClass}-100` : "bg-white/20",
+      iconColor: isExpanded ? `text-${feature.bgColor}-600` : "text-white",
+      checkBg: `${bgColorClass}-50`,
+      checkColor: `text-${feature.bgColor}-500`
+    };
+  }, [feature.bgColor, isExpanded]);
+  
+  return (
+    <motion.div 
+      className={`rounded-2xl overflow-hidden mb-4 shadow-lg relative ${
+        isExpanded ? "bg-white" : `bg-gradient-to-br ${feature.color}`
+      }`}
+      layoutId={`card-container-${index}`}
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0, transition: { delay: index * 0.1 } }}
+      whileTap={{ scale: 0.98 }}
+    >
+      {/* Header */}
+      <motion.div 
+        className={`p-4 flex items-center justify-between cursor-pointer ${
+          isExpanded ? "border-b border-slate-100" : ""
+        }`}
+        layoutId={`card-header-${index}`}
+        onClick={() => toggleExpand(index)}
+      >
+        <div className="flex items-center">
+          <motion.div
+            layoutId={`card-icon-${index}`}
+            className={`w-10 h-10 rounded-full flex items-center justify-center mr-3 ${colorClasses.iconBg}`}
+          >
+            <IconComponent size={20} className={colorClasses.iconColor} />
+          </motion.div>
+          <motion.div
+            layoutId={`card-title-${index}`}
+            className={isExpanded ? "text-slate-800 font-bold" : "text-white font-bold"}
+          >
+            {feature.title}
+          </motion.div>
+        </div>
+        
+        <motion.div
+          className={`rounded-full w-7 h-7 flex items-center justify-center ${
+            isExpanded ? "bg-slate-100 text-slate-500" : "bg-white/20 text-white"
+          }`}
+          whileTap={{ scale: 0.9 }}
+        >
+          {isExpanded ? <X size={14} /> : <Plus size={14} />}
+        </motion.div>
+      </motion.div>
+      
+      {/* Expandable content with optimized rendering */}
+      <AnimatePresence>
+        {isExpanded && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ type: "spring", duration: 0.4 }}
+            className="overflow-hidden"
+          >
+            <div className="p-4 pt-2">
+              <p className="text-slate-600 text-sm mb-4">
+                {feature.description}
+              </p>
+              
+              <div className="grid grid-cols-1 gap-3">
+                {feature.features.map((item, i) => (
+                  <div key={i} className="flex items-center">
+                    <div className={`w-6 h-6 rounded-full ${colorClasses.checkBg} flex items-center justify-center mr-3`}>
+                      <CheckCircle2 size={14} className={colorClasses.checkColor} />
+                    </div>
+                    <span className="text-slate-700 text-sm">{item}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.div>
+  );
+});
+
+// Optimized MobileMetricStack with motion variants
+const MobileMetricStack = memo(() => {
+  const [activeIndex, setActiveIndex] = useState(0);
+  
+  // Use useMemo to avoid recreating these objects
+  const positionVariants = useMemo(() => ({
+    active: { top: "0%", left: "0%", right: "0%", opacity: 1, zIndex: 30 },
+    next: { top: "10%", left: "5%", right: "5%", opacity: 1, zIndex: 20 },
+    afterNext: { top: "20%", left: "10%", right: "10%", opacity: 0.5, zIndex: 10 }
+  }), []);
+  
+  const arrowAnimation = useMemo(() => ({
+    y: [0, 5, 0]
+  }), []);
+  
+  const cycleMetric = useCallback(() => {
+    setActiveIndex((prev) => (prev + 1) % METRICS.length);
+  }, []);
+  
+  return (
+    <div className="relative h-40 mb-8">
+      {METRICS.map((metric, index) => {
+        const isActive = index === activeIndex;
+        const isNext = (index === (activeIndex + 1) % METRICS.length);
+        const isAfterNext = (index === (activeIndex + 2) % METRICS.length);
+        
+        // Determine which variant to use
+        let variant = isActive ? "active" : isNext ? "next" : "afterNext";
+        
+        // Get color classes based on metric color
+        const borderClass = `bg-gradient-to-r from-${metric.color}-500 to-${metric.color}-600`;
+        
+        return (
+          <motion.div
+            key={index}
+            className="absolute text-center p-5 pt-4 rounded-xl bg-white border border-slate-200 shadow-lg"
+            initial={false}
+            animate={positionVariants[variant]}
+            transition={{ type: "spring", stiffness: 300, damping: 20 }}
+            onClick={isActive ? cycleMetric : undefined}
+            style={{ pointerEvents: isActive ? "auto" : "none" }}
+          >
+            <div className={`absolute top-0 left-0 right-0 h-1 ${borderClass}`}></div>
+            <div className="text-3xl font-bold text-slate-800 mb-1">{metric.value}</div>
+            <div className="text-slate-600 font-medium text-sm">{metric.label}</div>
+            
+            {isActive && (
+              <motion.div 
+                className="absolute -bottom-3 left-1/2 transform -translate-x-1/2 w-8 h-8 bg-white rounded-full shadow-md flex items-center justify-center text-slate-400"
+                animate={arrowAnimation}
+                transition={{ repeat: Infinity, duration: 1.5 }}
+              >
+                <ArrowDown size={16} />
+              </motion.div>
+            )}
+          </motion.div>
+        );
+      })}
+    </div>
+  );
+});
+
+// Main AI Technology Component with optimized rendering
 const AiTechnology = () => {
-  // Detect mobile vs desktop - only rendering what's needed
+  // Enhanced media query hook
   const isMobile = useMediaQuery('(max-width: 767px)');
   const [expandedCard, setExpandedCard] = useState(null);
   
-  // Memoized toggle function to avoid recreation
+  // Memoized toggle function
   const toggleExpand = useCallback((index) => {
     setExpandedCard(prevExpanded => prevExpanded === index ? null : index);
   }, []);
   
-  // Memoized desktop renderer
-  const renderDesktop = useCallback(() => (
+  // Optimized desktop renderer with useMemo
+  const desktopView = useMemo(() => (
     <div className="grid grid-cols-12 gap-4 md:gap-6">
       {/* Main Feature: DeepSeek LLM - Large card */}
       <BentoBox className="col-span-12 lg:col-span-6" delay={0}>
@@ -465,8 +518,8 @@ const AiTechnology = () => {
           </div>
           
           <div className="space-y-3 mt-2">
-            <CheckItem text="Local medical terminology" />
-            <CheckItem text="Regional healthcare practices" />
+            <CheckItem text="Local medical terminology" bgColor="green" />
+            <CheckItem text="Regional healthcare practices" bgColor="green" />
           </div>
         </div>
       </BentoBox>
@@ -482,16 +535,16 @@ const AiTechnology = () => {
           </div>
           
           <div className="space-y-3 mt-2">
-            <CheckItem text="Works without internet" />
-            <CheckItem text="Perfect for limited connectivity" />
+            <CheckItem text="Works without internet" bgColor="blue" />
+            <CheckItem text="Perfect for limited connectivity" bgColor="blue" />
           </div>
         </div>
       </BentoBox>
     </div>
   ), []);
   
-  // Memoized mobile renderer
-  const renderMobile = useCallback(() => (
+  // Optimized mobile renderer with useMemo
+  const mobileView = useMemo(() => (
     <div className="px-1">
       {/* Interactive 3D Stack for metrics */}
       <MobileMetricStack />
@@ -550,59 +603,56 @@ const AiTechnology = () => {
           />
         </div>
         
-        {isMobile ? renderMobile() : renderDesktop()}
+        {/* Conditional rendering with memoized components */}
+        {isMobile ? mobileView : desktopView}
       </div>
 
-
       <style jsx>{`
-       
-      @keyframes blob {
-        0% {
-           transform: translate(0px, 0px) scale(1);
+        @keyframes blob {
+          0% {
+             transform: translate(0px, 0px) scale(1);
+          }
+          33% {
+             transform: translate(30px, -50px) scale(1.1);
+          }
+          66% {
+             transform: translate(-20px, 20px) scale(0.9);
+          }
+          100% {
+             transform: translate(0px, 0px) scale(1);
+          }
         }
-        33% {
-           transform: translate(30px, -50px) scale(1.1);
-        }
-        66% {
-           transform: translate(-20px, 20px) scale(0.9);
-        }
-        100% {
-           transform: translate(0px, 0px) scale(1);
-        }
-      }
 
-      .animate-blob {
-        animation: blob 30s infinite alternate;
-      }
-
-      .animation-delay-2000 {
-        animation-delay: 2s;
-      }
-
-      .animation-delay-4000 {
-        animation-delay: 4s;
-      }
-
-      .bento-box {
-        opacity: 0;
-        transform: translateY(20px);
-        transition: opacity 0.5s ease-out, transform 0.5s ease-out;
-      }
-
-      @media (prefers-reduced-motion: reduce) {
         .animate-blob {
-        animation: none;
-      }
-  
-      .bento-box {
-        transition: none;
-      }
-    }   
+          animation: blob 30s infinite alternate;
+        }
+
+        .animation-delay-2000 {
+          animation-delay: 2s;
+        }
+
+        .animation-delay-4000 {
+          animation-delay: 4s;
+        }
+
+        .bento-box {
+          opacity: 0;
+          transform: translateY(20px);
+          transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+          .animate-blob {
+            animation: none;
+          }
+    
+          .bento-box {
+            transition: none;
+          }
+        }   
       `}</style>
     </section>
-
-    
   );
 };
 
-export default AiTechnology;      
+export default AiTechnology;

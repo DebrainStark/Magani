@@ -68,7 +68,7 @@ const useIntersectionObserver = (options) => {
   return [elementRef, isIntersecting];
 };
 
-// Memoized ProblemCard component with direct Tailwind classes - BORDER REMOVED
+// Memoized ProblemCard component with consistent height
 const ProblemCard = memo(({ card, isActive, onActivate, isVisible, delay, flowDirection }) => {
   const { id, title, description, icon: Icon, color, number } = card;
 
@@ -81,8 +81,7 @@ const ProblemCard = memo(({ card, isActive, onActivate, isVisible, delay, flowDi
           hoverBg: "hover:bg-primary-50/50",
           iconBg: isActive ? "bg-primary-100" : "bg-primary-50",
           iconColor: "text-primary-600",
-          numberBg: "bg-primary-500",
-          indicator: "bg-primary-400"
+          numberBg: "bg-primary-500"
         };
       case 'secondary':
         return {
@@ -90,8 +89,7 @@ const ProblemCard = memo(({ card, isActive, onActivate, isVisible, delay, flowDi
           hoverBg: "hover:bg-secondary-50/50",
           iconBg: isActive ? "bg-secondary-100" : "bg-secondary-50",
           iconColor: "text-secondary-600",
-          numberBg: "bg-secondary-500",
-          indicator: "bg-secondary-400"
+          numberBg: "bg-secondary-500"
         };
       case 'purple':
         return {
@@ -99,8 +97,7 @@ const ProblemCard = memo(({ card, isActive, onActivate, isVisible, delay, flowDi
           hoverBg: "hover:bg-purple-50/50",
           iconBg: isActive ? "bg-purple-100" : "bg-purple-50",
           iconColor: "text-purple-600",
-          numberBg: "bg-purple-500",
-          indicator: "bg-purple-400"
+          numberBg: "bg-purple-500"
         };
       case 'red':
         return {
@@ -108,8 +105,7 @@ const ProblemCard = memo(({ card, isActive, onActivate, isVisible, delay, flowDi
           hoverBg: "hover:bg-red-50/50",
           iconBg: isActive ? "bg-red-100" : "bg-red-50",
           iconColor: "text-red-600",
-          numberBg: "bg-red-500",
-          indicator: "bg-red-400"
+          numberBg: "bg-red-500"
         };
       default:
         return {
@@ -117,8 +113,7 @@ const ProblemCard = memo(({ card, isActive, onActivate, isVisible, delay, flowDi
           hoverBg: "hover:bg-slate-50/50",
           iconBg: isActive ? "bg-slate-100" : "bg-slate-50",
           iconColor: "text-slate-600",
-          numberBg: "bg-slate-500",
-          indicator: "bg-slate-400"
+          numberBg: "bg-slate-500"
         };
     }
   };
@@ -135,7 +130,7 @@ const ProblemCard = memo(({ card, isActive, onActivate, isVisible, delay, flowDi
 
   return (
     <div 
-      className={`group relative w-28 sm:w-36 md:w-52 lg:w-64 ${classes.bg} ${classes.hoverBg} p-2 md:p-4 rounded-xl ${isActive ? 'shadow-2xl scale-105 z-10' : 'shadow-lg'} cursor-pointer outline-none`}
+      className={`group relative w-full h-full sm:h-auto sm:w-36 md:w-52 lg:w-64 ${classes.bg} ${classes.hoverBg} p-2 md:p-4 rounded-xl ${isActive ? 'shadow-2xl scale-105 z-10' : 'shadow-lg'} cursor-pointer outline-none flex flex-col justify-between`}
       style={{ 
         opacity: isVisible ? 1 : 0,
         transform: isVisible ? 'translateY(0)' : 'translateY(30px)',
@@ -180,7 +175,7 @@ const ProblemCard = memo(({ card, isActive, onActivate, isVisible, delay, flowDi
       </div>
       
         {/* Active indicator line with explicit animation properties */}
-      
+    
     </div>
   );
 });
@@ -203,7 +198,7 @@ const ConnectorArrow = memo(({ isVisible, delay, isReverse = false }) => (
   </div>
 ));
 
-// Memoized mobile problem card component - BORDER REMOVED
+// Memoized mobile problem card component - CONSISTENT HEIGHT
 const MobileProblemCard = memo(({ card, isActive, onActivate, isVisible, delay, isLast }) => {
   const { id, title, description, icon: Icon, color } = card;
   
@@ -216,7 +211,6 @@ const MobileProblemCard = memo(({ card, isActive, onActivate, isVisible, delay, 
           hoverBg: "hover:bg-primary-50/50",
           text: "text-primary-600",
           active: "bg-primary-100",
-          indicator: "bg-primary-400",
           badgeBg: "bg-primary-500"
         };
       case 'secondary':
@@ -225,7 +219,6 @@ const MobileProblemCard = memo(({ card, isActive, onActivate, isVisible, delay, 
           hoverBg: "hover:bg-secondary-50/50",
           text: "text-secondary-600",
           active: "bg-secondary-100",
-          indicator: "bg-secondary-400",
           badgeBg: "bg-secondary-500"
         };
       case 'purple':
@@ -234,7 +227,6 @@ const MobileProblemCard = memo(({ card, isActive, onActivate, isVisible, delay, 
           hoverBg: "hover:bg-purple-50/50",
           text: "text-purple-600",
           active: "bg-purple-100",
-          indicator: "bg-purple-400",
           badgeBg: "bg-purple-500"
         };
       case 'red':
@@ -243,7 +235,6 @@ const MobileProblemCard = memo(({ card, isActive, onActivate, isVisible, delay, 
           hoverBg: "hover:bg-red-50/50",
           text: "text-red-600",
           active: "bg-red-100",
-          indicator: "bg-red-400",
           badgeBg: "bg-red-500"
         };
       default:
@@ -252,7 +243,6 @@ const MobileProblemCard = memo(({ card, isActive, onActivate, isVisible, delay, 
           hoverBg: "hover:bg-slate-50/50",
           text: "text-slate-600",
           active: "bg-slate-100",
-          indicator: "bg-slate-400",
           badgeBg: "bg-slate-500"
         };
     }
@@ -269,9 +259,9 @@ const MobileProblemCard = memo(({ card, isActive, onActivate, isVisible, delay, 
   };
   
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col h-full">
       <div 
-        className={`relative rounded-xl ${classes.bg} ${classes.hoverBg} ${isActive ? 'shadow-lg' : 'shadow-md'} outline-none`}
+        className={`relative rounded-xl h-24 ${classes.bg} ${classes.hoverBg} ${isActive ? 'shadow-lg' : 'shadow-md'} outline-none flex-grow`}
         style={{ 
           opacity: isVisible ? 1 : 0,
           transform: isVisible ? 'translateY(0)' : 'translateY(20px)',
@@ -285,7 +275,7 @@ const MobileProblemCard = memo(({ card, isActive, onActivate, isVisible, delay, 
         aria-pressed={isActive}
         aria-label={`Problem: ${title} - ${description}`}
       >
-        <div className={`flex items-center p-2 rounded-lg`}>
+        <div className={`flex items-center p-2 rounded-lg h-full`}>
           <div className="relative flex-shrink-0">
             <div 
               className={`w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center rounded-full shadow-sm ${classes.text} ${isActive ? classes.active : ''}`}
@@ -313,9 +303,8 @@ const MobileProblemCard = memo(({ card, isActive, onActivate, isVisible, delay, 
             aria-hidden="true" 
           />
         </div>
-        
-        
       </div>
+        
       
       {/* Connector between cards - except last card */}
       {!isLast && (
@@ -366,16 +355,14 @@ const ProblemStatement = () => {
             isVisible ? 'opacity-100 transform translate-y-0' : 'opacity-0 transform translate-y-8'
           }`}
         >
-          {/* Enhanced responsive alert badge with improved animation */}
-          <div className="mt-2 sm:mt-4 inline-flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-1 sm:py-2 bg-red-50 rounded-full text-red-600 text-xs sm:text-sm md:text-base font-semibold shadow-md hover:shadow-lg transition-shadow duration-300">
-            <div className="flex items-center justify-center w-4 h-4 sm:w-5 sm:h-5 bg-red-100 rounded-full relative">
-              <AlertTriangle size={12} className="sm:size-4 text-red-500" aria-hidden="true" />
-              <span 
-                className="absolute inset-0 rounded-full bg-red-400 opacity-30 animate-ping"
-                style={{ animationDuration: '3s' }}
-              ></span>
+          {/* Badge styled similar to the example */}
+          <div className="mb-4 inline-block">
+            <div className="bg-red-100 text-red-700 px-3 py-1 rounded-full border border-red-200">
+              <span className="flex items-center gap-2 text-sm font-medium">
+                <AlertTriangle size={18} className="text-red-500" />
+                Critical Industry Challenge
+              </span>
             </div>
-            <span>Critical Industry Challenge</span>
           </div>
           
           <SectionTitle 
@@ -388,53 +375,61 @@ const ProblemStatement = () => {
         {/* Responsive problem chain with improved accessibility */}
         <div className="mt-6 sm:mt-8 md:mt-10 lg:mt-12 max-w-5xl mx-auto">
           {/* First row - hidden on mobile, visible on tablet+ */}
-          <div className="hidden sm:flex justify-center items-center gap-1 md:gap-3 lg:gap-6 mb-6 md:mb-12" role="list" aria-label="Healthcare problem flow: first phase">
-            <ProblemCard 
-              card={PROBLEM_CARDS[0]}
-              isActive={activeCard === 1}
-              onActivate={setActiveCard}
-              isVisible={isVisible}
-              delay={1}
-              flowDirection="right"
-            />
+          <div className="hidden sm:flex sm:justify-center sm:items-stretch gap-1 md:gap-3 lg:gap-6 mb-6 md:mb-12" role="list" aria-label="Healthcare problem flow: first phase">
+            <div className="flex-1 max-w-xs">
+              <ProblemCard 
+                card={PROBLEM_CARDS[0]}
+                isActive={activeCard === 1}
+                onActivate={setActiveCard}
+                isVisible={isVisible}
+                delay={1}
+                flowDirection="right"
+              />
+            </div>
             
             <ConnectorArrow isVisible={isVisible} delay={600} />
             
-            <ProblemCard 
-              card={PROBLEM_CARDS[1]}
-              isActive={activeCard === 2}
-              onActivate={setActiveCard}
-              isVisible={isVisible}
-              delay={2}
-              flowDirection="right"
-            />
+            <div className="flex-1 max-w-xs">
+              <ProblemCard 
+                card={PROBLEM_CARDS[1]}
+                isActive={activeCard === 2}
+                onActivate={setActiveCard}
+                isVisible={isVisible}
+                delay={2}
+                flowDirection="right"
+              />
+            </div>
           </div>
           
           {/* Second row - hidden on mobile, visible on tablet+ */}
-          <div className="hidden sm:flex justify-center items-center gap-1 md:gap-3 lg:gap-6" role="list" aria-label="Healthcare problem flow: second phase">
-            <ProblemCard 
-              card={PROBLEM_CARDS[3]}
-              isActive={activeCard === 4}
-              onActivate={setActiveCard}
-              isVisible={isVisible}
-              delay={4}
-              flowDirection="left"
-            />
+          <div className="hidden sm:flex sm:justify-center sm:items-stretch gap-1 md:gap-3 lg:gap-6" role="list" aria-label="Healthcare problem flow: second phase">
+            <div className="flex-1 max-w-xs">
+              <ProblemCard 
+                card={PROBLEM_CARDS[3]}
+                isActive={activeCard === 4}
+                onActivate={setActiveCard}
+                isVisible={isVisible}
+                delay={4}
+                flowDirection="left"
+              />
+            </div>
             
             <ConnectorArrow isVisible={isVisible} delay={800} isReverse={true} />
             
-            <ProblemCard 
-              card={PROBLEM_CARDS[2]}
-              isActive={activeCard === 3}
-              onActivate={setActiveCard}
-              isVisible={isVisible}
-              delay={3}
-              flowDirection="left"
-            />
+            <div className="flex-1 max-w-xs">
+              <ProblemCard 
+                card={PROBLEM_CARDS[2]}
+                isActive={activeCard === 3}
+                onActivate={setActiveCard}
+                isVisible={isVisible}
+                delay={3}
+                flowDirection="left"
+              />
+            </div>
           </div>
           
-          {/* Improved mobile-optimized accordion layout */}
-          <div className="sm:hidden space-y-3 max-w-sm mx-auto" role="list" aria-label="Healthcare problem sequence">
+          {/* Improved mobile-optimized grid layout with fixed heights */}
+          <div className="sm:hidden grid grid-cols-1 gap-3 max-w-sm mx-auto" role="list" aria-label="Healthcare problem sequence">
             {PROBLEM_CARDS.map((card, index) => (
               <MobileProblemCard 
                 key={card.id}
@@ -458,7 +453,7 @@ const ProblemStatement = () => {
             transform: isVisible ? 'translateY(0)' : 'translateY(8px)'
           }}
         >
-          <div className="inline-flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 px-2 sm:px-4 md:px-6 py-2 sm:py-4 bg-gradient-to-r from-red-50 to-red-100 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300">
+          <div className="inline-flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 px-3 sm:px-4 md:px-5 py-3 sm:py-4 bg-red-100 rounded-xl shadow-md">
             <AlertTriangle size={18} className="text-red-500 sm:mr-1" aria-hidden="true" />
             <span className="text-base sm:text-lg md:text-xl lg:text-2xl font-bold text-red-700 text-center">Most HMOs in Nigeria have MLRs above 100-140%</span>
           </div>
