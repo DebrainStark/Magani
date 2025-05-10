@@ -314,16 +314,7 @@ const MobileProblemCard = memo(({ card, isActive, onActivate, isVisible, delay, 
           />
         </div>
         
-        {/* Active indicator with explicit transition control */}
-        <div 
-          className={`absolute -right-1 inset-y-0 w-1 ${classes.indicator} rounded-r-xl ${
-            isActive ? 'scale-y-100' : 'scale-y-0'
-          } origin-top`}
-          style={{
-            transition: isActive ? 'transform 0.3s ease-out' : 'none'
-          }}
-          aria-hidden="true"
-        ></div>
+        
       </div>
       
       {/* Connector between cards - except last card */}
